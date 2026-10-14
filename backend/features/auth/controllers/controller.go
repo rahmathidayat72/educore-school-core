@@ -57,7 +57,10 @@ func (lc *AuthController) Auth(w http.ResponseWriter, r *http.Request) error {
 	data := map[string]interface{}{
 		"id":   login.ID,
 		"role": login.Role,
-	}                                             // Data untuk membuat token
+	}
+	if login.SchoolUnitID != nil {
+		data["school_unit_id"] = *login.SchoolUnitID
+	}
 	token, expTime, err := helper.SignToken(data) // Membuat token berdasarkan data
 	if err != nil {
 		log.Printf("Token generation failed: %v", err)
@@ -65,14 +68,15 @@ func (lc *AuthController) Auth(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	// Membuat response yang berisi token, id, username, email, role, dan expiration time
+	// Membuat response yang berisi token, id, username, email, role, school_unit_id, dan expiration time
 	response := ResponseAuth{
-		ID:         login.ID,
-		Username:   login.Username, // atau Nama, konsisten
-		Email:      login.Email,
-		Role:       login.Role,
-		Token:      token,
-		Expiration: expTime,
+		ID:           login.ID,
+		Username:     login.Username, // atau Nama, konsisten
+		Email:        login.Email,
+		Role:         login.Role,
+		SchoolUnitID: login.SchoolUnitID,
+		Token:        token,
+		Expiration:   expTime,
 	}
 
 	w.Header().Set("Content-Type", "application/json") // Menentukan tipe konten response agar dapat di parse oleh client-side

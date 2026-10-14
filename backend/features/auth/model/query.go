@@ -38,14 +38,15 @@ func (a *AuthQuery) Login(email string, password string) (dataLogin auth.UserCor
 
 	// Ambil user berdasarkan email saja
 	// Query ini digunakan untuk mengambil data user dari database berdasarkan email.
-	// Jika user tidak ditemukan maka akan terjadi error.
-	query := "SELECT id, username, email, password, role FROM users WHERE email = $1"
+	// Jika user tidak ditemukan atau dinonaktifkan (delete_at IS NOT NULL) maka akan terjadi error.
+	query := "SELECT id, username, email, password, role, school_unit_id FROM users WHERE email = $1 AND delete_at IS NULL"
 	err = a.DB.QueryRow(context.Background(), query, email).Scan(
 		&userLogin.ID,
 		&userLogin.Username,
 		&userLogin.Email,
 		&userLogin.Password,
 		&userLogin.Role,
+		&userLogin.SchoolUnitID,
 	)
 
 	if err != nil {

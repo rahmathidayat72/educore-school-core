@@ -5,12 +5,12 @@ import "go_rest_native_sekolah/features/users"
 // UserFormatter adalah struktur data yang merepresentasikan data user yang akan dikirimkan sebagai respon API.
 // Struktur ini berisi ID user, nama pengguna, email, password, dan role user.
 type UserFormatter struct {
-	ID       string `json:"id"`       // ID adalah identifikasi unik untuk setiap user.
-	Username string `json:"username"` // Username adalah nama pengguna yang digunakan untuk login.
-	Email    string `json:"email"`    // Email adalah alamat email user yang digunakan untuk login.
-	Password string `json:"password"` // Password adalah password yang digunakan user untuk login.
-	Role     string `json:"role"`     // Role adalah peran user yang menentukan akses terhadap fitur-fitur di aplikasi.
-
+	ID           string  `json:"id"`                       // ID adalah identifikasi unik untuk setiap user.
+	Username     string  `json:"username"`                 // Username adalah nama pengguna yang digunakan untuk login.
+	Email        string  `json:"email"`                    // Email adalah alamat email user yang digunakan untuk login.
+	Password     string  `json:"password"`                 // Password adalah password yang digunakan user untuk login.
+	Role         string  `json:"role"`                     // Role adalah peran user yang menentukan akses terhadap fitur-fitur di aplikasi.
+	SchoolUnitID *string `json:"school_unit_id,omitempty"` // ID unit sekolah yayasan
 }
 
 // FormatUserList adalah fungsi yang digunakan untuk mengubah slice UserCore menjadi slice UserFormatter.
@@ -23,11 +23,12 @@ func FormatUserList(cores []users.UserCore) []UserFormatter {
 	for _, core := range cores {
 		// Membuat objek UserFormatter dan mengisi dengan data-data user
 		formatted = append(formatted, UserFormatter{
-			ID:       core.ID,       // ID adalah identifikasi unik untuk setiap user.
-			Username: core.Username, // Username adalah nama pengguna yang digunakan untuk login.
-			Email:    core.Email,    // Email adalah alamat email user yang digunakan untuk login.
-			Password: core.Password, // Password adalah password yang digunakan user untuk login.
-			Role:     core.Role,     // Role adalah peran user yang menentukan akses terhadap fitur-fitur di aplikasi.
+			ID:           core.ID,           // ID adalah identifikasi unik untuk setiap user.
+			Username:     core.Username,     // Username adalah nama pengguna yang digunakan untuk login.
+			Email:        core.Email,        // Email adalah alamat email user yang digunakan untuk login.
+			Password:     core.Password,     // Password adalah password yang digunakan user untuk login.
+			Role:         core.Role,         // Role adalah peran user yang menentukan akses terhadap fitur-fitur di aplikasi.
+			SchoolUnitID: core.SchoolUnitID, // ID unit sekolah
 		})
 	}
 	// Mengembalikan slice UserFormatter yang telah di format
@@ -41,10 +42,11 @@ func FormatUserList(cores []users.UserCore) []UserFormatter {
 func FormatUserRequestToCore(req UserFormatter) users.UserCore {
 	// Membuat objek UserCore dan mengisi dengan data-data user
 	return users.UserCore{
-		ID:       req.ID,       // ID adalah identifikasi unik untuk setiap user.
-		Username: req.Username, // Username adalah nama pengguna yang digunakan untuk login.
-		Email:    req.Email,    // Email adalah alamat email user yang digunakan untuk login.
-		Password: req.Password, // Password adalah password yang digunakan user untuk login.
-		Role:     req.Role,     // Role adalah peran user yang menentukan akses terhadap fitur-fitur di aplikasi.
+		ID:           req.ID,           // ID adalah identifikasi unik untuk setiap user.
+		Username:     req.Username,     // Username adalah nama pengguna yang digunakan untuk login.
+		Email:        req.Email,        // Email adalah alamat email user yang digunakan untuk login.
+		Password:     req.Password,     // Password adalah password yang digunakan user untuk login.
+		Role:         req.Role,         // Role adalah peran user yang menentukan akses terhadap fitur-fitur di aplikasi.
+		SchoolUnitID: req.SchoolUnitID, // ID unit sekolah
 	}
 }

@@ -16,9 +16,10 @@ import (
 )
 
 type MetaToken struct {
-	ID   string `json:"id"`
-	Role string `json:"role"`
-	Exp  string `json:"exp"`
+	ID           string  `json:"id"`
+	Role         string  `json:"role"`
+	SchoolUnitID *string `json:"school_unit_id,omitempty"`
+	Exp          string  `json:"exp"`
 }
 
 type AccessToken struct {
@@ -133,10 +134,10 @@ func RolesAllowedMiddleware(db *pgxpool.Pool, allowedRoles []string, next http.H
 	}
 }
 
-// AdminOnlyMiddleware memastikan request dilakukan oleh pengguna dengan role admin
+// AdminOnlyMiddleware memastikan request dilakukan oleh pengguna dengan role admin atau super_admin
 // Memeriksa token JWT sekaligus memverifikasi status role langsung dari database
 func AdminOnlyMiddleware(db *pgxpool.Pool, next http.HandlerFunc) http.HandlerFunc {
-	return RolesAllowedMiddleware(db, []string{"admin"}, next)
+	return RolesAllowedMiddleware(db, []string{"admin", "super_admin"}, next)
 }
 
 // UserSelfOrAdminMiddleware mengizinkan admin untuk melihat/mengakses siapa saja,
@@ -170,7 +171,7 @@ func UserSelfOrAdminMiddleware(db *pgxpool.Pool, next http.HandlerFunc) http.Han
 			userRole = strings.ToLower(strings.TrimSpace(dbRole))
 		}
 
-		if userRole == "admin" {
+		if userRole == "admin" || userRole == "super_admin" {
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -216,6 +217,9 @@ func VerifyTokenHeader(requestToken string) (MetaToken, error) {
 		}
 		if role, ok := claims["role"].(string); ok {
 			meta.Role = role
+		}
+		if unitID, ok := claims["school_unit_id"].(string); ok && unitID != "" {
+			meta.SchoolUnitID = &unitID
 		}
 		return meta, nil
 	}

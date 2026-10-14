@@ -13,13 +13,14 @@ type (
 	// 6. Update_At (time.Time) sebagai waktu update data user
 	// 7. Delete_At (*time.Time) sebagai waktu delete data user
 	UserCore struct {
-		ID        string     `json:"id"`        // ID data user
-		Username  string     `json:"username"`  // Nama pengguna
-		Email     string     `json:"email"`     // Email user
-		Password  string     `json:"password"`  // Password user
-		Role      string     `json:"role"`      // Peran user
-		Update_At time.Time  `json:"update_at"` // Waktu update data user
-		Delete_At *time.Time `json:"delete_at"` // Waktu delete data user
+		ID           string     `json:"id"`                       // ID data user
+		Username     string     `json:"username"`                 // Nama pengguna
+		Email        string     `json:"email"`                    // Email user
+		Password     string     `json:"password"`                 // Password user
+		Role         string     `json:"role"`                     // Peran user (super_admin, admin, guru, dll)
+		SchoolUnitID *string    `json:"school_unit_id,omitempty"` // ID unit sekolah yayasan
+		Update_At    time.Time  `json:"update_at"`                // Waktu update data user
+		Delete_At    *time.Time `json:"delete_at"`                // Waktu delete data user
 	}
 
 	// DataAuthInterface merepresentasikan interface untuk data auth.

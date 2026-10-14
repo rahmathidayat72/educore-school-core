@@ -41,7 +41,7 @@ func (u *UserQuerry) SelectAllUser() ([]users.UserCore, error) {
 
 	// Query untuk mengambil semua data user dari database
 	// Filter data user yang tidak dihapus
-	query := "SELECT id, username, email, password, role FROM users WHERE delete_at IS NULL"
+	query := "SELECT id, username, email, password, role, school_unit_id FROM users WHERE delete_at IS NULL"
 
 	rows, err := u.db.Query(context.Background(), query)
 	if err != nil {
@@ -56,20 +56,18 @@ func (u *UserQuerry) SelectAllUser() ([]users.UserCore, error) {
 	// Fungsi ini digunakan untuk mengiterasi data yang diambil dari database dan
 	// memasukkan data tersebut dalam slice users.UserCore
 	for rows.Next() {
-		var user users.UserCore // Deklarasi variabel user untuk menyimpan data yang diiterasi
+		var user User // Deklarasi variabel user untuk menyimpan data yang diiterasi
 
 		// Pindai setiap baris ke dalam variabel user
 		// Fungsi Scan digunakan untuk memindai setiap baris yang diiterasi
 		// dan menyimpannya dalam variabel user
-		err := rows.Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.Role)
+		err := rows.Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.Role, &user.SchoolUnitID)
 		if err != nil {
 			// Jika terjadi error saat scan maka kembalikan error
 			return nil, err
 		}
 
-		// Format data user yang diiterasi menjadi objek UserCore yang sesuai
-		core := FormatterRequest(user)
-		result = append(result, FormatterResponse(core))
+		result = append(result, FormatterResponse(user))
 	}
 
 	// Cek apakah ada error setelah loop
@@ -115,7 +113,7 @@ func (u *UserQuerry) InsertUser(input *users.UserCore) error {
 	userInput.Password = hashedPassword
 
 	// Query untuk memasukkan data user ke dalam tabel users.
-	query := `INSERT INTO users (id, username, email, password, role) VALUES ($1, $2, $3, $4, $5)`
+	query := `INSERT INTO users (id, username, email, password, role, school_unit_id) VALUES ($1, $2, $3, $4, $5, $6)`
 
 	// Eksekusi query untuk menyimpan data user ke dalam database.
 	_, err := u.db.Exec(context.Background(), query,
@@ -124,6 +122,7 @@ func (u *UserQuerry) InsertUser(input *users.UserCore) error {
 		userInput.Email,
 		userInput.Password,
 		userInput.Role,
+		userInput.SchoolUnitID,
 	)
 	// Jika terjadi error saat eksekusi query, log error dan kembalikan sebagai hasil fungsi.
 	if err != nil {
@@ -154,29 +153,23 @@ func (u *UserQuerry) SelectUserById(id string) (*users.UserCore, error) {
 	}
 
 	// Query untuk mengambil data user berdasarkan id.
-	// Query ini akan mengambil kolom id, username, email, password, dan role
-	// berdasarkan id yang dikirimkan dan delete_at IS NULL
-	// yang artinya data user yang diambil belum dihapus.
-	query := "SELECT id, username, email, password, role FROM users WHERE id = $1 AND delete_at IS NULL"
+	query := "SELECT id, username, email, password, role, school_unit_id FROM users WHERE id = $1 AND delete_at IS NULL"
 
 	// Jalankan query.
-	// Fungsi QueryRow akan mengembalikan row yang sesuai dengan query
-	// dan error jika terjadi kesalahan.
 	row := u.db.QueryRow(context.Background(), query, id)
 
 	// Deklarasikan variabel result yang akan digunakan untuk menyimpan hasil query.
-	var result users.UserCore
+	var result User
 
 	// Scan hasil query ke variabel result.
-	// Fungsi Scan akan mengembalikan error jika terjadi kesalahan.
-	err := row.Scan(&result.ID, &result.Username, &result.Email, &result.Password, &result.Role)
+	err := row.Scan(&result.ID, &result.Username, &result.Email, &result.Password, &result.Role, &result.SchoolUnitID)
 	if err != nil {
 		// Jika terjadi error maka kembalikan error.
 		return nil, fmt.Errorf("gagal mengambil data user: %w", err)
 	}
 
-	// Kembalikan data user yang diambil.
-	return &result, nil
+	core := FormatterResponse(result)
+	return &core, nil
 }
 
 // UpdateUser implements users.DataUserInterface.
@@ -199,9 +192,9 @@ func (u *UserQuerry) UpdateUser(insert *users.UserCore, id string) error {
 	hashedPassword := helper.HashPassword(insert.Password)
 
 	// Membuat query SQL untuk mengupdate data user berdasarkan ID.
-	query := "UPDATE users SET username = $2, email = $3, password = $4, role = $5 WHERE id = $1"
+	query := "UPDATE users SET username = $2, email = $3, password = $4, role = $5, school_unit_id = $6 WHERE id = $1"
 	// Menjalankan query update pada database dengan parameter yang diberikan.
-	res, err := u.db.Exec(context.Background(), query, id, insert.Username, insert.Email, hashedPassword, insert.Role)
+	res, err := u.db.Exec(context.Background(), query, id, insert.Username, insert.Email, hashedPassword, insert.Role, insert.SchoolUnitID)
 	if err != nil {
 		// Log error jika terjadi kesalahan saat eksekusi query.
 		log.Printf("UpdateUser error exec: %v", err)

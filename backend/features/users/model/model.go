@@ -17,8 +17,10 @@ type User struct {
 	// Password adalah field yang berisi password user yang dienkripsi
 	Password string `json:"password"`
 	// Role adalah field yang berisi peran user dalam sistem
-	// peran user dapat berupa "admin" atau "user"
+	// peran user dapat berupa "super_admin", "admin", "guru", "siswa", dll
 	Role string `json:"role"`
+	// SchoolUnitID adalah field yang mengikat user ke unit sekolah yayasan
+	SchoolUnitID *string `json:"school_unit_id"`
 	// Update_at adalah field yang berisi waktu terakhir update data user
 	Update_At string `json:"update_at"`
 	// Delete_at adalah field yang berisi waktu penghapusan data user
@@ -39,12 +41,13 @@ func (u *User) TableName() string {
 func FormatterRequest(req users.UserCore) User {
 	// Membuat objek User dan mengisi dengan data dari objek UserCore.
 	return User{
-		ID:        req.ID,                                   // Mengisi field ID dengan ID dari objek UserCore.
-		Username:  req.Username,                             // Mengisi field Username dengan Username dari objek UserCore.
-		Email:     req.Email,                                // Mengisi field Email dengan Email dari objek UserCore.
-		Password:  req.Password,                             // Mengisi field Password dengan Password dari objek UserCore.
-		Role:      req.Role,                                 // Mengisi field Role dengan Role dari objek UserCore.
-		Update_At: time.Now().Format("2006-01-02 15:04:05"), // Mengisi field Update_At dengan waktu saat ini.
+		ID:           req.ID,                                   // Mengisi field ID dengan ID dari objek UserCore.
+		Username:     req.Username,                             // Mengisi field Username dengan Username dari objek UserCore.
+		Email:        req.Email,                                // Mengisi field Email dengan Email dari objek UserCore.
+		Password:     req.Password,                             // Mengisi field Password dengan Password dari objek UserCore.
+		Role:         req.Role,                                 // Mengisi field Role dengan Role dari objek UserCore.
+		SchoolUnitID: req.SchoolUnitID,                         // Mengisi field SchoolUnitID dengan SchoolUnitID dari objek UserCore.
+		Update_At:    time.Now().Format("2006-01-02 15:04:05"), // Mengisi field Update_At dengan waktu saat ini.
 	}
 
 }
@@ -55,10 +58,11 @@ func FormatterRequest(req users.UserCore) User {
 func FormatterResponse(res User) users.UserCore {
 	// Mengembalikan objek UserCore yang berisi data user dari objek User.
 	return users.UserCore{
-		ID:       res.ID,       // Mengisi field ID dengan ID dari objek User.
-		Username: res.Username, // Mengisi field Username dengan Username dari objek User.
-		Email:    res.Email,    // Mengisi field Email dengan Email dari objek User.
-		Password: res.Password, // Mengisi field Password dengan Password dari objek User.
-		Role:     res.Role,     // Mengisi field Role dengan Role dari objek User.
+		ID:           res.ID,           // Mengisi field ID dengan ID dari objek User.
+		Username:     res.Username,     // Mengisi field Username dengan Username dari objek User.
+		Email:        res.Email,        // Mengisi field Email dengan Email dari objek User.
+		Password:     res.Password,     // Mengisi field Password dengan Password dari objek User.
+		Role:         res.Role,         // Mengisi field Role dengan Role dari objek User.
+		SchoolUnitID: res.SchoolUnitID, // Mengisi field SchoolUnitID dengan SchoolUnitID dari objek User.
 	}
 }

@@ -12,11 +12,12 @@ import (
 // 4. Password (string) sebagai password user
 // 5. Role (string) sebagai peran user
 type User struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Role     string `json:"role"`
+	ID           string  `json:"id"`
+	Username     string  `json:"username"`
+	Email        string  `json:"email"`
+	Password     string  `json:"password"`
+	Role         string  `json:"role"`
+	SchoolUnitID *string `json:"school_unit_id"`
 }
 
 // TableName digunakan untuk mengembalikan nama tabel yang digunakan
@@ -40,10 +41,11 @@ func FormatterRequest(req users.UserCore) User {
 // Fungsi ini digunakan untuk memformat data user agar sesuai dengan kebutuhan response API
 func FormatterResponse(res User) users.UserCore {
 	return users.UserCore{
-		ID:       res.ID,
-		Username: res.Username,
-		Email:    res.Email,
-		Password: res.Password,
-		Role:     res.Role,
+		ID:           res.ID,
+		Username:     res.Username,
+		Email:        res.Email,
+		Password:     res.Password,
+		Role:         res.Role,
+		SchoolUnitID: res.SchoolUnitID,
 	}
 }

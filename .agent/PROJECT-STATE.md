@@ -4,8 +4,8 @@
 - **Project Name:** EduCore School — School Core Management
 - **Current Lifecycle State:** `IN_PROGRESS`
 - **Current Phase:** `Phase 03 — Identity, Role Super Admin, & Tenant Isolation`
-- **Current Active Task:** `task-03.1` (Pembaruan entitas users & JWT claims multi-unit)
-- **Last Completed Task:** `task-02.3` (Penyiapan unit percontohan & data backfill)
+- **Current Active Task:** `task-03.2` (Isolasi data unit sekolah pada service & model)
+- **Last Completed Task:** `task-03.1` (Pembaruan entitas users & JWT claims multi-unit)
 - **Security Gate Status:** `APPROVED`
 - **Security Risk Tier:** `MEDIUM`
 - **Remediation Gate Status:** `NOT_REQUIRED`

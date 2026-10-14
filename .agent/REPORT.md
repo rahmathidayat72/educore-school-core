@@ -91,3 +91,17 @@
 - **Bukti / Verifikasi:**
   - File migrasi 000003 UP dan DOWN terverifikasi ada via `glob`.
   - Sintaks FK constraint dan data seed divalidasi.
+
+### [2026-10-14] Task 03.1 — Pembaruan Entitas Users & JWT Claims Multi-Unit
+- **Status:** `✅ Selesai dan terverifikasi`
+- **Tindakan:**
+  1. Menambahkan field `SchoolUnitID *string` pada entitas `UserCore` di `features/auth/entities.go` dan `features/users/entities.go`.
+  2. Memperbarui `MetaToken` dan `VerifyTokenHeader` pada `helper/middlewares.go` untuk menyalin dan membaca `school_unit_id` dari JWT claims.
+  3. Mengizinkan role `super_admin` pada `AdminOnlyMiddleware` dan `UserSelfOrAdminMiddleware`.
+  4. Menyesuaikan query login di `features/auth/model/query.go` untuk men-select `school_unit_id` dan memvalidasi `delete_at IS NULL`.
+  5. Menyesuaikan `features/auth/controllers/controller.go` agar klaim `school_unit_id` disisipkan ke token dan response JSON.
+  6. Menyesuaikan query CRUD di `features/users/model/querry.go` agar membaca dan menyimpan `school_unit_id`.
+  7. Menjalankan seluruh rangkaian unit testing backend Go.
+- **Bukti / Verifikasi:**
+  - `go test ./...` lulus 100% tanpa error atau regresi.
+  - Test suites `features/auth`, `features/users`, dan `helper` seluruhnya berstatus `PASS`.
