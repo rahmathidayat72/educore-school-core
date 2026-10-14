@@ -762,6 +762,17 @@ func academicYearsRouter(mux *http.ServeMux, db *pgxpool.Pool) {
 		}
 	})))
 
+	// Alias endpoint /academic-years/activate
+	mux.HandleFunc("/academic-years/activate", helper.AuthMiddleware(helper.RolesAllowedMiddleware(db, allowedAdminRoles, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost || r.Method == http.MethodPut {
+			if err := ayController.SetActiveYear(w, r); err != nil {
+				helper.JSONResponse(w, http.StatusInternalServerError, err.Error())
+			}
+		} else {
+			helper.JSONResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
+		}
+	})))
+
 	mux.HandleFunc("/academic-years/deleted", helper.AuthMiddleware(helper.RolesAllowedMiddleware(db, allowedAdminRoles, func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodPost || r.Method == http.MethodDelete {
 			if err := ayController.DeleteYear(w, r); err != nil {

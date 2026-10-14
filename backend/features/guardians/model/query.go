@@ -294,7 +294,7 @@ func (m *GuardianModel) SelectStudentsByGuardianID(guardianID string) ([]guardia
 		SELECT 
 			sg.id, sg.guardian_id, sg.siswa_id, sg.is_primary, sg.created_at, sg.update_at, sg.delete_at,
 			s.nama as nama_siswa, s.nisn,
-			k.nama_kelas,
+			k.kelas as nama_kelas,
 			u.nama_sekolah
 		FROM student_guardians sg
 		JOIN siswa s ON sg.siswa_id = s.id
@@ -340,7 +340,7 @@ func (m *GuardianModel) SelectGuardiansBySiswaID(siswaID string) ([]guardians.St
 		SELECT 
 			sg.id, sg.guardian_id, sg.siswa_id, sg.is_primary, sg.created_at, sg.update_at, sg.delete_at,
 			s.nama as nama_siswa, s.nisn,
-			k.nama_kelas,
+			k.kelas as nama_kelas,
 			u.nama_sekolah,
 			g.nama as nama_wali, g.hubungan, g.telepon as telepon_wali
 		FROM student_guardians sg

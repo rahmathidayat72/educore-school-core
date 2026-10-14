@@ -6,6 +6,10 @@ export const academicYearsApi = {
     const q = unitId ? `?unit_id=${encodeURIComponent(unitId)}` : ''
     return api.get(`/academic-years${q}`)
   },
+  getAll: (unitId = '') => {
+    const q = unitId ? `?unit_id=${encodeURIComponent(unitId)}` : ''
+    return api.get(`/academic-years${q}`)
+  },
   getActiveYear: (unitId = '') => {
     const q = unitId ? `?unit_id=${encodeURIComponent(unitId)}` : ''
     return api.get(`/academic-years/active${q}`)
@@ -14,9 +18,16 @@ export const academicYearsApi = {
     const q = unitId ? `?unit_id=${encodeURIComponent(unitId)}` : ''
     return api.post(`/academic-years/tambah${q}`, data)
   },
+  create: (data, unitId = '') => {
+    const q = unitId ? `?unit_id=${encodeURIComponent(unitId)}` : ''
+    return api.post(`/academic-years/tambah${q}`, data)
+  },
   updateYear: (id, data) => api.put(`/academic-years/update?id=${id}`, data),
-  activateYear: (id) => api.post(`/academic-years/activate?id=${id}`),
+  update: (id, data) => api.put(`/academic-years/update?id=${id}`, data),
+  activateYear: (id) => api.post(`/academic-years/set-active?id=${id}`),
+  setActive: (id) => api.post(`/academic-years/set-active?id=${id}`),
   deleteYear: (id) => api.delete(`/academic-years/deleted?id=${id}`),
+  delete: (id) => api.delete(`/academic-years/deleted?id=${id}`),
 
   // Class Enrollments
   getEnrollmentsByClass: (kelasId, academicYearId = '') => {
