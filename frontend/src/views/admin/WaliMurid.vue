@@ -128,16 +128,16 @@
                 {{ g.pekerjaan || '-' }}
               </td>
               <td>
-                <div v-if="g.students && g.students.length > 0" class="d-flex flex-wrap gap-1">
+                <div v-if="(g.students && g.students.length > 0) || (g.siswa_list && g.siswa_list.length > 0)" class="d-flex flex-wrap gap-1">
                   <span
-                    v-for="st in g.students"
+                    v-for="st in (g.students || g.siswa_list)"
                     :key="st.siswa_id || st.id"
                     class="badge bg-light text-dark border d-flex align-items-center gap-1"
                     style="font-size: 0.75rem;"
                   >
                     <i class="fas fa-user-graduate text-primary"></i>
                     <span>{{ st.nama_siswa || st.nama }}</span>
-                    <span v-if="st.kelas" class="text-muted">({{ st.kelas }})</span>
+                    <span v-if="st.nama_kelas || st.kelas" class="text-muted">({{ st.nama_kelas || st.kelas }})</span>
                   </span>
                 </div>
                 <div v-else class="text-muted small fst-italic">

@@ -182,8 +182,16 @@ func (s *siswaQuery) SelectAllSiswa(schoolUnitID ...string) ([]siswa.SiswaCore, 
 		s.tanggal_lahir,
 		s.agama,
 		s.no_telepon,
-		s.nama_wali,
-		s.no_telepon_wali,
+		COALESCE(
+			NULLIF(s.nama_wali, ''),
+			(SELECT g.nama FROM student_guardians sg JOIN guardians g ON sg.guardian_id = g.id WHERE sg.siswa_id = s.id AND sg.delete_at IS NULL AND g.delete_at IS NULL ORDER BY sg.is_primary DESC, sg.created_at DESC LIMIT 1),
+			''
+		) AS nama_wali,
+		COALESCE(
+			NULLIF(s.no_telepon_wali, ''),
+			(SELECT g.telepon FROM student_guardians sg JOIN guardians g ON sg.guardian_id = g.id WHERE sg.siswa_id = s.id AND sg.delete_at IS NULL AND g.delete_at IS NULL ORDER BY sg.is_primary DESC, sg.created_at DESC LIMIT 1),
+			''
+		) AS no_telepon_wali,
 		s.tahun_masuk,
 		s.status,
 		s.email, 
@@ -274,8 +282,16 @@ func (s *siswaQuery) SelectById(id string, schoolUnitID ...string) (*siswa.Siswa
 		s.tanggal_lahir,
 		s.agama,
 		s.no_telepon,
-		s.nama_wali,
-		s.no_telepon_wali,
+		COALESCE(
+			NULLIF(s.nama_wali, ''),
+			(SELECT g.nama FROM student_guardians sg JOIN guardians g ON sg.guardian_id = g.id WHERE sg.siswa_id = s.id AND sg.delete_at IS NULL AND g.delete_at IS NULL ORDER BY sg.is_primary DESC, sg.created_at DESC LIMIT 1),
+			''
+		) AS nama_wali,
+		COALESCE(
+			NULLIF(s.no_telepon_wali, ''),
+			(SELECT g.telepon FROM student_guardians sg JOIN guardians g ON sg.guardian_id = g.id WHERE sg.siswa_id = s.id AND sg.delete_at IS NULL AND g.delete_at IS NULL ORDER BY sg.is_primary DESC, sg.created_at DESC LIMIT 1),
+			''
+		) AS no_telepon_wali,
 		s.tahun_masuk,
 		s.status,
 		s.email, 

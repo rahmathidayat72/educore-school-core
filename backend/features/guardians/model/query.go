@@ -268,6 +268,17 @@ func (m *GuardianModel) LinkStudent(input *guardians.StudentGuardianCore) error 
 		}
 		return fmt.Errorf("gagal menautkan siswa dan wali: %w", err)
 	}
+
+	// Update kolom nama_wali dan no_telepon_wali di tabel siswa jika masih kosong
+	updateSiswaQuery := `
+		UPDATE siswa s
+		SET nama_wali = COALESCE(NULLIF(s.nama_wali, ''), g.nama),
+		    no_telepon_wali = COALESCE(NULLIF(s.no_telepon_wali, ''), g.telepon)
+		FROM guardians g
+		WHERE s.id = $1 AND g.id = $2
+	`
+	_, _ = m.db.Exec(ctx, updateSiswaQuery, input.SiswaID, input.GuardianID)
+
 	return nil
 }
 

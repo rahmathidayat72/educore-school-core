@@ -36,7 +36,18 @@ func normalizeHubungan(h string) string {
 }
 
 func (s *GuardianService) GetAll(search string) ([]guardians.GuardianCore, error) {
-	return s.repo.SelectAll(search)
+	list, err := s.repo.SelectAll(search)
+	if err != nil {
+		return nil, err
+	}
+
+	// Enrich tiap wali dengan daftar anak asuhan yang terhubung
+	for i := range list {
+		students, _ := s.repo.SelectStudentsByGuardianID(list[i].ID)
+		list[i].SiswaList = students
+	}
+
+	return list, nil
 }
 
 func (s *GuardianService) GetByID(id string) (*guardians.GuardianCore, error) {

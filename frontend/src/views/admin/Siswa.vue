@@ -1075,6 +1075,7 @@ const submitLinkGuardian = async () => {
     await guardiansApi.linkStudent(guardianId, targetSiswaForLink.value.id, isPrimary)
     showAlert('Wali murid berhasil ditautkan ke siswa!')
     closeLinkGuardianModal()
+    await fetchSiswa()
     if (selectedSiswa.value?.id === targetSiswaForLink.value.id) {
       fetchGuardiansBySiswa(selectedSiswa.value.id)
     }
@@ -1091,6 +1092,7 @@ const handleUnlinkGuardian = async (guardianId, siswaId) => {
   try {
     await guardiansApi.unlinkStudent(guardianId, siswaId)
     showAlert('Tautan wali murid berhasil diputuskan!')
+    await fetchSiswa()
     fetchGuardiansBySiswa(siswaId)
   } catch (err) {
     const errMsg = err.response?.data?.message || err.message || 'Gagal memutuskan relasi wali.'

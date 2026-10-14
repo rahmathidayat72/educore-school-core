@@ -31,6 +31,7 @@ type GuardianResponse struct {
 	CreatedAt   *time.Time                `json:"created_at,omitempty"`
 	UpdateAt    *time.Time                `json:"update_at,omitempty"`
 	SiswaList   []StudentGuardianResponse `json:"siswa_list,omitempty"`
+	Students    []StudentGuardianResponse `json:"students,omitempty"`
 }
 
 type LinkStudentRequest struct {
@@ -111,7 +112,9 @@ func ToGuardianResponse(core guardians.GuardianCore) GuardianResponse {
 		UpdateAt:    core.UpdateAt,
 	}
 	if len(core.SiswaList) > 0 {
-		resp.SiswaList = ToStudentGuardianResponseList(core.SiswaList)
+		list := ToStudentGuardianResponseList(core.SiswaList)
+		resp.SiswaList = list
+		resp.Students = list
 	}
 	return resp
 }
