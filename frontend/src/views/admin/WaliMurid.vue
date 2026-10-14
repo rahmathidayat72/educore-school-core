@@ -16,7 +16,10 @@
           <i class="fas fa-sync-alt" :class="{ 'fa-spin': loading }"></i>
           <span class="d-none d-sm-inline ms-1">Segarkan</span>
         </button>
-        <button @click="openCreateModal" class="btn btn-primary btn-sm d-flex align-items-center gap-1 shadow-sm">
+        <span v-if="!authStore.canManageWali" class="badge bg-secondary-subtle text-secondary border d-flex align-items-center gap-1 px-2 py-1">
+          <i class="fas fa-eye"></i> Mode Hanya Lihat (Guru)
+        </span>
+        <button v-if="authStore.canManageWali" @click="openCreateModal" class="btn btn-primary btn-sm d-flex align-items-center gap-1 shadow-sm">
           <i class="fas fa-user-plus"></i>
           <span>Tambah Wali Murid</span>
         </button>
@@ -145,8 +148,8 @@
                 </div>
               </td>
               <td class="text-center">
-                <div class="btn-group btn-group-sm">
-                  <button @click="openLinkModal(g)" class="btn btn-outline-success" title="Tautkan Anak / Siswa">
+                <div v-if="authStore.canManageWali" class="btn-group btn-group-sm">
+                  <button @click="openLinkModal(g)" class="btn btn-outline-success" title="Kelola Anak Asuhan">
                     <i class="fas fa-link"></i>
                   </button>
                   <button @click="openEditModal(g)" class="btn btn-outline-primary" title="Ubah Data">
@@ -154,6 +157,11 @@
                   </button>
                   <button @click="openDeleteModal(g)" class="btn btn-outline-danger" title="Hapus Wali">
                     <i class="fas fa-trash-alt"></i>
+                  </button>
+                </div>
+                <div v-else class="btn-group btn-group-sm">
+                  <button @click="openLinkModal(g)" class="btn btn-outline-info" title="Lihat Anak Asuhan">
+                    <i class="fas fa-eye me-1"></i>Lihat Anak
                   </button>
                 </div>
               </td>
@@ -297,7 +305,7 @@
         <div class="modal-content border-0 shadow">
           <div class="modal-header border-bottom pb-3">
             <h5 class="modal-title fw-bold text-dark">
-              <i class="fas fa-link text-success me-2"></i>Kelola Anak Asuhan
+              <i class="fas fa-link text-success me-2"></i>{{ authStore.canManageWali ? 'Kelola Anak Asuhan' : 'Detail Anak Asuhan' }}
             </h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
@@ -309,7 +317,7 @@
               <div class="text-muted small">Hubungan: {{ selectedGuardian?.hubungan || 'Wali' }} &bull; Kontak: {{ selectedGuardian?.telepon || '-' }}</div>
             </div>
 
-            <div class="mb-3">
+            <div v-if="authStore.canManageWali" class="mb-3">
               <label class="form-label small fw-semibold">Pilih Siswa untuk Ditautkan</label>
               <div class="input-group input-group-sm">
                 <select v-model="selectedStudentIdToLink" class="form-select form-select-sm" :disabled="loadingStudents">
@@ -351,6 +359,7 @@
                     </div>
                   </div>
                   <button
+                    v-if="authStore.canManageWali"
                     @click="unlinkStudent(st.siswa_id || st.id)"
                     class="btn btn-outline-danger btn-sm py-0 px-2 small"
                     title="Lepaskan tautan siswa dari wali murid ini"
@@ -403,8 +412,11 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { Modal } from 'bootstrap'
+import { useAuthStore } from '@/stores/auth'
 import { guardiansApi } from '@/api/guardiansApi'
 import { siswaApi } from '@/api/siswaApi'
+
+const authStore = useAuthStore()
 
 const guardians = ref([])
 const availableStudents = ref([])
@@ -518,7 +530,7 @@ const openLinkModal = async (g) => {
   linkedStudents.value = []
   linkModalInstance?.show()
   await refreshLinkedStudents(g.id)
-  if (availableStudents.value.length === 0) {
+  if (authStore.canManageWali && availableStudents.value.length === 0) {
     await fetchAvailableStudents()
   }
 }

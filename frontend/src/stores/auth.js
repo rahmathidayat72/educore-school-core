@@ -74,6 +74,14 @@ export const useAuthStore = defineStore('auth', {
       }
       return state.user.email === 'admin@sekolah.id' || state.user.username === 'admin'
     },
+    canManageWali: (state) => {
+      if (!state.user) return false
+      if (state.user.role) {
+        const r = String(state.user.role).trim().toLowerCase()
+        return r === 'admin' || r === 'super_admin'
+      }
+      return state.user.email === 'admin@sekolah.id' || state.user.username === 'admin'
+    },
     canManageKelas: (state) => {
       if (!state.user) return false
       const r = String(state.user.role || '').trim().toLowerCase()
