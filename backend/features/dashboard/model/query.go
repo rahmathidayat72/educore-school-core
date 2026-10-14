@@ -163,8 +163,8 @@ func (dm *DashboardModel) GetSummary(role string, userID string) (*dashboard.Das
 		}
 	}
 
-	// 7. Khusus Admin: Breakdown User Roles
-	if role == "admin" {
+	// 7. Khusus Admin & Super Admin: Breakdown User Roles
+	if role == "admin" || role == "super_admin" {
 		roleRows, err := dm.db.Query(ctx, `
 			SELECT role, COUNT(*) 
 			FROM users 

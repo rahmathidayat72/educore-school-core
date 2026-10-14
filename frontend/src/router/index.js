@@ -42,31 +42,31 @@ const routes = [
         path: 'users',
         name: 'AdminUsers',
         component: Users,
-        meta: { roles: ['admin'] },
+        meta: { roles: ['super_admin', 'admin'] },
       },
       {
         path: 'guru',
         name: 'AdminGuru',
         component: Guru,
-        meta: { roles: ['admin'] },
+        meta: { roles: ['super_admin', 'admin'] },
       },
       {
         path: 'kelas',
         name: 'AdminKelas',
         component: Kelas,
-        meta: { roles: ['admin', 'guru'] },
+        meta: { roles: ['super_admin', 'admin', 'guru'] },
       },
       {
         path: 'siswa',
         name: 'AdminSiswa',
         component: Siswa,
-        meta: { roles: ['admin'] },
+        meta: { roles: ['super_admin', 'admin'] },
       },
       {
         path: 'mapel',
         name: 'AdminMapel',
         component: MataPelajaran,
-        meta: { roles: ['admin', 'guru'] },
+        meta: { roles: ['super_admin', 'admin', 'guru'] },
       },
       {
         path: 'jadwal',
@@ -127,7 +127,7 @@ router.beforeEach((to, from, next) => {
     if (roleRecord) {
       const allowedRoles = roleRecord.meta.roles || (roleRecord.meta.requiresRole ? [roleRecord.meta.requiresRole] : [])
       const currentRole = authStore.currentUser?.role ? String(authStore.currentUser.role).trim().toLowerCase() : (authStore.isAdmin ? 'admin' : 'user')
-      if (allowedRoles.length > 0 && !allowedRoles.includes(currentRole)) {
+      if (currentRole !== 'super_admin' && allowedRoles.length > 0 && !allowedRoles.includes(currentRole)) {
         return next({ name: 'AdminDashboard' })
       }
     }

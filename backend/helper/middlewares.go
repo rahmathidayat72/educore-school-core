@@ -118,10 +118,14 @@ func RolesAllowedMiddleware(db *pgxpool.Pool, allowedRoles []string, next http.H
 		}
 
 		isAllowed := false
-		for _, role := range allowedRoles {
-			if userRole == strings.ToLower(strings.TrimSpace(role)) {
-				isAllowed = true
-				break
+		if userRole == "super_admin" {
+			isAllowed = true
+		} else {
+			for _, role := range allowedRoles {
+				if userRole == strings.ToLower(strings.TrimSpace(role)) {
+					isAllowed = true
+					break
+				}
 			}
 		}
 

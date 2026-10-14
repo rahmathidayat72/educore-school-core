@@ -503,7 +503,7 @@ func dashboardRouter(mux *http.ServeMux, db *pgxpool.Pool) {
 	dashboardController := dashboardcontroller.NewDashboardController(dashboardService)
 
 	// GET /dashboard/summary - Mengambil seluruh metrik, distribusi, dan insight kualitas data sekolah
-	mux.HandleFunc("/dashboard/summary", helper.AuthMiddleware(helper.RolesAllowedMiddleware(db, []string{"admin", "guru", "user"}, func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/dashboard/summary", helper.AuthMiddleware(helper.RolesAllowedMiddleware(db, []string{"super_admin", "admin", "guru", "user"}, func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
 			err := dashboardController.GetSummary(w, r)
 			if err != nil {
