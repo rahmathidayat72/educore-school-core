@@ -27,10 +27,10 @@
 - [x] `task-04.1`: Penyesuaian tabel rombel/kelas untuk jenjang SD (Fase A-C), SMP (Fase D), SMA (Fase E-F), dan SMK (Jurusan). (Status: `✅ Selesai dan terverifikasi`)
 - [x] `task-04.2`: Pembuatan tabel `academic_years` dan `class_enrollments`. (Status: `✅ Selesai dan terverifikasi`)
 - [x] `task-04.3`: Pembuatan tabel relasi wali murid `guardians` dan `student_guardians`. (Status: `✅ Selesai dan terverifikasi`)
-- [ ] `task-04.4`: Penyesuaian UI frontend untuk penautan wali murid dan rombel multi-jenjang. (Status: `📋 Siap`)
+- [x] `task-04.4`: Penyesuaian UI frontend untuk penautan wali murid dan rombel multi-jenjang. (Status: `✅ Selesai dan terverifikasi`)
 
 ### Phase 05: Penjadwalan Bebas Bentrok (Conflict-Free Schedule)
-- [ ] `task-05.1`: Implementasi deteksi bentrok jadwal guru & ruangan di `features/jadwal/service`.
+- [ ] `task-05.1`: Implementasi deteksi bentrok jadwal guru & ruangan di `features/jadwal/service`. (Status: `📋 Siap`)
 - [ ] `task-05.2`: Unit test komprehensif logika anti-bentrok.
 - [ ] `task-05.3`: UI frontend kalender/tabel jadwal dengan peringatan bentrok waktu.
 

@@ -200,3 +200,20 @@
   - `go test -v ./features/guardians/...` berstatus `PASS` (seluruh skenario pengujian unit service dan controller lulus 100%).
   - `go test ./...` berstatus `PASS` (zero regression di seluruh modul backend).
   - `go build ./...` sukses tanpa error maupun peringatan kompilasi.
+
+### [2026-10-14] Task 04.4 — Penyesuaian UI Frontend untuk Penautan Wali Murid dan Rombel Multi-Jenjang
+- **Status:** `✅ Selesai dan terverifikasi`
+- **Requirement:** OBJ-001, BUS-004, BUS-005, FR-006, FR-008, NFR-UX-001
+- **Tindakan:**
+  1. Membuat modul client axios baru di `frontend/src/api/guardiansApi.js` untuk rute CRUD wali murid dan relasi link/unlink student.
+  2. Membuat modul client axios baru di `frontend/src/api/academicYearsApi.js` untuk master tahun ajaran dan riwayat penempatan rombel.
+  3. Memperbarui `frontend/src/views/admin/Kelas.vue`:
+     - Menambahkan filter dan input form tingkat sekolah komprehensif dari Kelas 1 s.d. 13 (SD, SMP, SMA, SMK 4 Tahun).
+     - Menyesuaikan pilihan fase Kurikulum Merdeka secara berurutan: Fase A (SD Kelas 1-2), B (SD Kelas 3-4), C (SD Kelas 5-6), D (SMP Kelas 7-9), E (SMA Kelas 10), dan F (SMA/SMK Kelas 11-13).
+  4. Memperbarui `frontend/src/views/admin/Siswa.vue`:
+     - Menghubungkan dialog detail biodata siswa dengan pemanggilan relasi wali murid `getGuardiansBySiswaId`.
+     - Menyediakan modal interaktif "Kelola / Tautkan Wali" (`showLinkModal`) yang memungkinkan admin memilih wali murid terdaftar atau mendaftarkan wali baru secara langsung (*on-the-fly*).
+     - Menyediakan fitur pelepasan tautan (*unlink*) wali murid langsung dari antarmuka web.
+- **Bukti / Verifikasi:**
+  - `npm run build` di direktori `frontend/` berstatus `PASS` (Vite production build sukses tanpa error sintaks maupun bundling).
+  - `go test ./...` dan `go build ./...` di direktori `backend/` tetap berstatus `PASS` (Zero regression).

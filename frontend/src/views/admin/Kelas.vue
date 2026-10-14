@@ -53,12 +53,25 @@
         <div class="col-md-2">
           <select v-model="filterTingkat" class="form-select">
             <option value="">Semua Tingkat</option>
-            <option value="7">Kelas 7</option>
-            <option value="8">Kelas 8</option>
-            <option value="9">Kelas 9</option>
-            <option value="10">Kelas 10</option>
-            <option value="11">Kelas 11</option>
-            <option value="12">Kelas 12</option>
+            <optgroup label="SD / MI">
+              <option value="1">Kelas 1</option>
+              <option value="2">Kelas 2</option>
+              <option value="3">Kelas 3</option>
+              <option value="4">Kelas 4</option>
+              <option value="5">Kelas 5</option>
+              <option value="6">Kelas 6</option>
+            </optgroup>
+            <optgroup label="SMP / MTs">
+              <option value="7">Kelas 7</option>
+              <option value="8">Kelas 8</option>
+              <option value="9">Kelas 9</option>
+            </optgroup>
+            <optgroup label="SMA / SMK / MA">
+              <option value="10">Kelas 10</option>
+              <option value="11">Kelas 11</option>
+              <option value="12">Kelas 12</option>
+              <option value="13">Kelas 13 (SMK 4 Thn)</option>
+            </optgroup>
           </select>
         </div>
         <div class="col-md-2 text-md-end">
@@ -220,24 +233,37 @@
                         <label class="form-label small fw-semibold text-secondary">Tingkat Pendidikan</label>
                         <select v-model="form.tingkat" class="form-select">
                           <option value="">-- Pilih Tingkat --</option>
-                          <option value="7">Kelas 7 (SMP/MTs)</option>
-                          <option value="8">Kelas 8 (SMP/MTs)</option>
-                          <option value="9">Kelas 9 (SMP/MTs)</option>
-                          <option value="10">Kelas 10 (SMA/SMK)</option>
-                          <option value="11">Kelas 11 (SMA/SMK)</option>
-                          <option value="12">Kelas 12 (SMA/SMK)</option>
+                          <optgroup label="SD / MI">
+                            <option value="1">Kelas 1 (SD/MI)</option>
+                            <option value="2">Kelas 2 (SD/MI)</option>
+                            <option value="3">Kelas 3 (SD/MI)</option>
+                            <option value="4">Kelas 4 (SD/MI)</option>
+                            <option value="5">Kelas 5 (SD/MI)</option>
+                            <option value="6">Kelas 6 (SD/MI)</option>
+                          </optgroup>
+                          <optgroup label="SMP / MTs">
+                            <option value="7">Kelas 7 (SMP/MTs)</option>
+                            <option value="8">Kelas 8 (SMP/MTs)</option>
+                            <option value="9">Kelas 9 (SMP/MTs)</option>
+                          </optgroup>
+                          <optgroup label="SMA / SMK / MA">
+                            <option value="10">Kelas 10 (SMA/SMK)</option>
+                            <option value="11">Kelas 11 (SMA/SMK)</option>
+                            <option value="12">Kelas 12 (SMA/SMK)</option>
+                            <option value="13">Kelas 13 (SMK 4 Tahun)</option>
+                          </optgroup>
                         </select>
                       </div>
                       <div class="col-md-4">
                         <label class="form-label small fw-semibold text-secondary">Fase (Kurikulum Merdeka)</label>
                         <select v-model="form.fase" class="form-select">
                           <option value="">-- Pilih Fase --</option>
-                          <option value="Fase D">Fase D (SMP / Kelas 7-9)</option>
-                          <option value="Fase E">Fase E (SMA / Kelas 10)</option>
-                          <option value="Fase F">Fase F (SMA / Kelas 11-12)</option>
                           <option value="Fase A">Fase A (SD / Kelas 1-2)</option>
                           <option value="Fase B">Fase B (SD / Kelas 3-4)</option>
                           <option value="Fase C">Fase C (SD / Kelas 5-6)</option>
+                          <option value="Fase D">Fase D (SMP / Kelas 7-9)</option>
+                          <option value="Fase E">Fase E (SMA / Kelas 10)</option>
+                          <option value="Fase F">Fase F (SMA / Kelas 11-12/13)</option>
                         </select>
                       </div>
                       <div class="col-md-4">

@@ -395,10 +395,51 @@
 
                   <div class="col-md-6">
                     <div class="border rounded-3 p-3 h-100 bg-white">
-                      <h6 class="fw-bold text-success mb-3 small text-uppercase">
-                        <i class="fas fa-users me-2"></i>Orang Tua / Wali
-                      </h6>
-                      <dl class="row mb-0 small">
+                      <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold text-success mb-0 small text-uppercase">
+                          <i class="fas fa-users me-2"></i>Orang Tua / Wali Murid
+                        </h6>
+                        <button 
+                          type="button" 
+                          class="btn btn-xs btn-outline-success py-0 px-2 small" 
+                          style="font-size: 0.75rem;"
+                          @click="openLinkGuardianModal(selectedSiswa)"
+                        >
+                          <i class="fas fa-link me-1"></i>Kelola Wali
+                        </button>
+                      </div>
+
+                      <div v-if="loadingGuardians" class="text-center py-2 text-muted small">
+                        <div class="spinner-border spinner-border-sm text-success me-1"></div>
+                        Memuat data relasi wali...
+                      </div>
+                      <div v-else-if="studentGuardians.length > 0" class="d-flex flex-column gap-2 mt-2">
+                        <div 
+                          v-for="g in studentGuardians" 
+                          :key="g.id" 
+                          class="p-2 border rounded bg-light small d-flex justify-content-between align-items-center"
+                        >
+                          <div>
+                            <span class="fw-bold text-dark d-block">
+                              {{ g.nama_wali }}
+                              <span v-if="g.is_primary" class="badge bg-success text-white ms-1" style="font-size: 0.65rem;">Utama</span>
+                            </span>
+                            <span class="text-muted" style="font-size: 0.75rem;">
+                              <i class="fas fa-user-tag me-1"></i>{{ g.hubungan || 'Wali' }} &bull; 
+                              <i class="fas fa-phone me-1"></i>{{ g.telepon_wali || '-' }}
+                            </span>
+                          </div>
+                          <button 
+                            type="button" 
+                            class="btn btn-link text-danger p-0 ms-2" 
+                            title="Putuskan relasi"
+                            @click="handleUnlinkGuardian(g.guardian_id, selectedSiswa.id)"
+                          >
+                            <i class="fas fa-times"></i>
+                          </button>
+                        </div>
+                      </div>
+                      <dl v-else class="row mb-0 small mt-1">
                         <dt class="col-sm-5 text-secondary">Nama Wali</dt>
                         <dd class="col-sm-7 fw-semibold text-dark">{{ selectedSiswa.nama_wali || '-' }}</dd>
 
@@ -468,6 +509,118 @@
         </div>
       </Transition>
     </Teleport>
+
+    <!-- Modal Penautan Wali Murid (Task-04.4) -->
+    <Teleport to="body">
+      <Transition name="modal-fade">
+        <div v-if="showLinkModal" class="app-modal-overlay" tabindex="-1" @click.self="closeLinkGuardianModal">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg bg-white">
+              <div class="modal-header bg-success text-white">
+                <h5 class="modal-title fw-bold d-flex align-items-center gap-2">
+                  <i class="fas fa-link"></i>
+                  <span>Tautkan Wali Murid ke {{ targetSiswaForLink?.nama }}</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" @click="closeLinkGuardianModal"></button>
+              </div>
+              <div class="modal-body p-4">
+                <ul class="nav nav-pills nav-fill mb-3" role="tablist">
+                  <li class="nav-item">
+                    <button 
+                      class="nav-link py-1 small" 
+                      :class="{ active: linkTab === 'existing' }" 
+                      @click="linkTab = 'existing'"
+                    >
+                      Pilih Wali Terdaftar
+                    </button>
+                  </li>
+                  <li class="nav-item">
+                    <button 
+                      class="nav-link py-1 small" 
+                      :class="{ active: linkTab === 'new' }" 
+                      @click="linkTab = 'new'"
+                    >
+                      Daftarkan Wali Baru
+                    </button>
+                  </li>
+                </ul>
+
+                <!-- Tab 1: Pilih Existing -->
+                <div v-if="linkTab === 'existing'">
+                  <div class="mb-3">
+                    <label class="form-label small fw-semibold text-secondary">Cari &amp; Pilih Wali Murid</label>
+                    <select v-model="linkForm.guardian_id" class="form-select" required>
+                      <option value="">-- Pilih Wali Murid --</option>
+                      <option v-for="g in allGuardians" :key="g.id" :value="g.id">
+                        {{ g.nama }} ({{ g.hubungan || 'Wali' }}) - Telp: {{ g.telepon }}
+                      </option>
+                    </select>
+                  </div>
+                  <div class="form-check mb-3">
+                    <input v-model="linkForm.is_primary" class="form-check-input" type="checkbox" id="checkPrimary" />
+                    <label class="form-check-label small" for="checkPrimary">
+                      Tetapkan sebagai Wali Utama (Kontak Darurat Prioritas)
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Tab 2: Daftarkan Baru -->
+                <div v-else>
+                  <div class="row g-2 mb-2">
+                    <div class="col-md-7">
+                      <label class="form-label small fw-semibold text-secondary">Nama Lengkap Wali <span class="text-danger">*</span></label>
+                      <input v-model="newGuardianForm.nama" type="text" class="form-control" placeholder="Nama ayah/ibu/wali" required />
+                    </div>
+                    <div class="col-md-5">
+                      <label class="form-label small fw-semibold text-secondary">Hubungan</label>
+                      <select v-model="newGuardianForm.hubungan" class="form-select">
+                        <option value="Ayah">Ayah</option>
+                        <option value="Ibu">Ibu</option>
+                        <option value="Wali">Wali</option>
+                        <option value="Kakak">Kakak</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="row g-2 mb-2">
+                    <div class="col-md-6">
+                      <label class="form-label small fw-semibold text-secondary">No. Telepon / WA <span class="text-danger">*</span></label>
+                      <input v-model="newGuardianForm.telepon" type="tel" class="form-control" placeholder="08xxxxxxxxxx" required />
+                    </div>
+                    <div class="col-md-6">
+                      <label class="form-label small fw-semibold text-secondary">NIK (Opsional)</label>
+                      <input v-model="newGuardianForm.nik" type="text" class="form-control" placeholder="16 digit NIK" />
+                    </div>
+                  </div>
+                  <div class="mb-2">
+                    <label class="form-label small fw-semibold text-secondary">Alamat Rumah (Opsional)</label>
+                    <textarea v-model="newGuardianForm.alamat" rows="2" class="form-control" placeholder="Alamat wali murid"></textarea>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input v-model="newGuardianForm.is_primary" class="form-check-input" type="checkbox" id="checkNewPrimary" />
+                    <label class="form-check-label small" for="checkNewPrimary">
+                      Tetapkan sebagai Wali Utama
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-light" @click="closeLinkGuardianModal">Batal</button>
+                <button 
+                  type="button" 
+                  class="btn btn-success d-flex align-items-center gap-1"
+                  :disabled="submittingLink"
+                  @click="submitLinkGuardian"
+                >
+                  <span v-if="submittingLink" class="spinner-border spinner-border-sm"></span>
+                  <i v-else class="fas fa-check"></i>
+                  <span>{{ linkTab === 'existing' ? 'Tautkan Wali' : 'Simpan &amp; Tautkan' }}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -477,6 +630,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { siswaApi } from '@/api/siswaApi'
 import { kelasApi } from '@/api/kelasApi'
+import { guardiansApi } from '@/api/guardiansApi'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -489,6 +643,29 @@ const deleting = ref(false)
 const searchQuery = ref('')
 const filterKelas = ref('')
 const filterStatus = ref('')
+
+// Guardians State (Task-04.4)
+const studentGuardians = ref([])
+const loadingGuardians = ref(false)
+const showLinkModal = ref(false)
+const linkTab = ref('existing')
+const allGuardians = ref([])
+const targetSiswaForLink = ref(null)
+const submittingLink = ref(false)
+
+const linkForm = ref({
+  guardian_id: '',
+  is_primary: false,
+})
+
+const newGuardianForm = ref({
+  nama: '',
+  hubungan: 'Ayah',
+  telepon: '',
+  nik: '',
+  alamat: '',
+  is_primary: false,
+})
 
 const alertMessage = ref('')
 const alertClass = ref('alert-success')
@@ -655,14 +832,126 @@ const openEditModal = (s) => {
   showModal.value = true
 }
 
+const fetchGuardiansBySiswa = async (siswaId) => {
+  if (!siswaId) return
+  loadingGuardians.value = true
+  try {
+    const res = await guardiansApi.getGuardiansBySiswaId(siswaId)
+    if (res.data && res.data.data) {
+      studentGuardians.value = res.data.data
+    } else {
+      studentGuardians.value = []
+    }
+  } catch (err) {
+    console.error('Error fetching student guardians', err)
+    studentGuardians.value = []
+  } finally {
+    loadingGuardians.value = false
+  }
+}
+
+const fetchAllGuardians = async () => {
+  try {
+    const res = await guardiansApi.getAll()
+    if (res.data && res.data.data) {
+      allGuardians.value = res.data.data
+    }
+  } catch (err) {
+    console.error('Error fetching all guardians', err)
+  }
+}
+
 const openDetailModal = (s) => {
   selectedSiswa.value = s
   showDetailModal.value = true
+  studentGuardians.value = []
+  fetchGuardiansBySiswa(s.id)
 }
 
 const closeDetailModal = () => {
   showDetailModal.value = false
   selectedSiswa.value = null
+  studentGuardians.value = []
+}
+
+const openLinkGuardianModal = (s) => {
+  targetSiswaForLink.value = s
+  linkTab.value = 'existing'
+  linkForm.value = {
+    guardian_id: '',
+    is_primary: false,
+  }
+  newGuardianForm.value = {
+    nama: '',
+    hubungan: 'Ayah',
+    telepon: '',
+    nik: '',
+    alamat: '',
+    is_primary: false,
+  }
+  fetchAllGuardians()
+  showLinkModal.value = true
+}
+
+const closeLinkGuardianModal = () => {
+  showLinkModal.value = false
+  targetSiswaForLink.value = null
+}
+
+const submitLinkGuardian = async () => {
+  if (!targetSiswaForLink.value) return
+  submittingLink.value = true
+  try {
+    let guardianId = linkForm.value.guardian_id
+    let isPrimary = linkForm.value.is_primary
+
+    if (linkTab.value === 'new') {
+      if (!newGuardianForm.value.nama || !newGuardianForm.value.telepon) {
+        showAlert('Nama dan nomor telepon wali wajib diisi!', 'danger')
+        submittingLink.value = false
+        return
+      }
+      const created = await guardiansApi.create({
+        nama: newGuardianForm.value.nama,
+        hubungan: newGuardianForm.value.hubungan,
+        telepon: newGuardianForm.value.telepon,
+        nik: newGuardianForm.value.nik,
+        alamat: newGuardianForm.value.alamat,
+      })
+      guardianId = created.data?.data?.id
+      isPrimary = newGuardianForm.value.is_primary
+    }
+
+    if (!guardianId) {
+      showAlert('Silakan pilih atau daftarkan wali murid terlebih dahulu.', 'danger')
+      submittingLink.value = false
+      return
+    }
+
+    await guardiansApi.linkStudent(guardianId, targetSiswaForLink.value.id, isPrimary)
+    showAlert('Wali murid berhasil ditautkan ke siswa!')
+    closeLinkGuardianModal()
+    if (selectedSiswa.value?.id === targetSiswaForLink.value.id) {
+      fetchGuardiansBySiswa(selectedSiswa.value.id)
+    }
+  } catch (err) {
+    const errMsg = err.response?.data?.message || err.response?.data || err.message || 'Gagal menautkan wali murid.'
+    showAlert(typeof errMsg === 'string' ? errMsg : 'Gagal menautkan wali murid.', 'danger')
+  } finally {
+    submittingLink.value = false
+  }
+}
+
+const handleUnlinkGuardian = async (guardianId, siswaId) => {
+  if (!confirm('Apakah Anda yakin ingin memutuskan tautan wali murid ini dari siswa?')) return
+  try {
+    await guardiansApi.unlinkStudent(guardianId, siswaId)
+    showAlert('Tautan wali murid berhasil diputuskan!')
+    fetchGuardiansBySiswa(siswaId)
+  } catch (err) {
+    const errMsg = err.response?.data?.message || err.message || 'Gagal memutuskan relasi wali.'
+    showAlert(typeof errMsg === 'string' ? errMsg : 'Gagal memutuskan relasi wali.', 'danger')
+  }
 }
 
 const openEditFromDetail = () => {
