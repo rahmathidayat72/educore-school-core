@@ -120,3 +120,20 @@
 - **Bukti / Verifikasi:**
   - `go test -v ./...` berhasil dijalankan pada root backend: seluruh paket dan mock test berstatus `PASS` (100% lulus).
   - `go build ./...` berhasil tanpa peringatan maupun error kompilasi.
+
+### [2026-10-14] Task 03.3 — Implementasi Endpoint CRUD Unit Sekolah Khusus Super Admin
+- **Status:** `✅ Selesai dan terverifikasi`
+- **Requirement:** BUS-003, FR-001, FR-004, NFR-SEC-001
+- **Tindakan:**
+  1. Menambahkan middleware otorisasi `SuperAdminOnlyMiddleware` pada `helper/middlewares.go` untuk melindungi operasi perubahan data yayasan.
+  2. Membuat entity domain `SchoolUnitCore` dan interface `DataSchoolUnitInterface` serta `ServiceSchoolUnitInterface` di `features/school_units/entities.go`.
+  3. Mengimplementasikan model database PostgreSQL `SchoolUnitModel` di `features/school_units/model/` dengan query parameterized (`SelectAll`, `SelectByID`, `Insert`, `Update`, `Delete`, `CheckNPSNExists`).
+  4. Mengimplementasikan service layer `SchoolUnitService` di `features/school_units/service/logic.go` dengan validasi jenjang (SD, SMP, SMA, SMK), validasi status, dan pengecekan keunikan NPSN.
+  5. Menulis unit testing komprehensif `features/school_units/service/logic_test.go` dengan mock repository.
+  6. Membuat DTO dan response serializer di `features/school_units/controllers/formatter.go`.
+  7. Membuat HTTP presentation layer `SchoolUnitController` di `features/school_units/controllers/controller.go`.
+  8. Mendaftarkan route HTTP `/school-units`, `/school-units/detail`, `/school-units/tambah`, `/school-units/update`, dan `/school-units/deleted` pada `router/router.go`.
+- **Bukti / Verifikasi:**
+  - `go test -v ./features/school_units/...` berstatus `PASS` (100% lulus seluruh skenario pengujian: get all, get by id, validation error, duplicate NPSN, update, dan delete).
+  - `go test -v ./...` berstatus `PASS` (100% lulus seluruh paket backend tanpa regresi).
+  - `go build ./...` sukses tanpa error maupun peringatan kompilasi.

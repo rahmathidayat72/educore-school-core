@@ -3,9 +3,9 @@
 ## 1. Status Metadata
 - **Project Name:** EduCore School — School Core Management
 - **Current Lifecycle State:** `IN_PROGRESS`
-- **Current Phase:** `Phase 03 — Identity, Role Super Admin, & Tenant Isolation`
-- **Current Active Task:** `task-03.3` (Endpoint CRUD Unit Sekolah khusus Super Admin)
-- **Last Completed Task:** `task-03.2` (Isolasi data unit sekolah pada service, model query, & controller)
+- **Current Phase:** `Phase 04 — Penguatan Modul Inti (Siswa, Wali, Guru, Rombel)`
+- **Current Active Task:** `task-04.1` (Penyesuaian tabel rombel/kelas untuk multi-jenjang SD-SMK)
+- **Last Completed Task:** `task-03.3` (Endpoint CRUD Unit Sekolah khusus Super Admin)
 - **Security Gate Status:** `APPROVED`
 - **Security Risk Tier:** `MEDIUM`
 - **Remediation Gate Status:** `NOT_REQUIRED`

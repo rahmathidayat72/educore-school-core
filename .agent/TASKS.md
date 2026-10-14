@@ -21,10 +21,10 @@
 ### Phase 03: Identity, Role Super Admin, & Tenant Isolation
 - [x] `task-03.1`: Perbarui entitas `users` dan JWT claims (`school_unit_id`, `role: super_admin`). (Status: `✅ Selesai dan terverifikasi`)
 - [x] `task-03.2`: Implementasi isolasi data unit sekolah pada service & model (WHERE `school_unit_id`). (Status: `✅ Selesai dan terverifikasi`)
-- [ ] `task-03.3`: Implementasi endpoint CRUD Unit Sekolah khusus Super Admin. (Status: `📋 Siap`)
+- [x] `task-03.3`: Implementasi endpoint CRUD Unit Sekolah khusus Super Admin. (Status: `✅ Selesai dan terverifikasi`)
 
 ### Phase 04: Penguatan Modul Inti (Siswa, Wali, Guru, Rombel)
-- [ ] `task-04.1`: Penyesuaian tabel rombel/kelas untuk jenjang SD (Fase A-C), SMP (Fase D), SMA (Fase E-F), dan SMK (Jurusan).
+- [ ] `task-04.1`: Penyesuaian tabel rombel/kelas untuk jenjang SD (Fase A-C), SMP (Fase D), SMA (Fase E-F), dan SMK (Jurusan). (Status: `📋 Siap`)
 - [ ] `task-04.2`: Pembuatan tabel `academic_years` dan `class_enrollments`.
 - [ ] `task-04.3`: Pembuatan tabel relasi wali murid `guardians` dan `student_guardians`.
 - [ ] `task-04.4`: Penyesuaian UI frontend untuk penautan wali murid dan rombel multi-jenjang.

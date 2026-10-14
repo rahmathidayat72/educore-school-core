@@ -32,6 +32,10 @@ import (
 	jadwalmodels "go_rest_native_sekolah/features/jadwal/model"
 	servicejadwal "go_rest_native_sekolah/features/jadwal/service"
 
+	schoolunitscontroller "go_rest_native_sekolah/features/school_units/controllers"
+	schoolunitsmodels "go_rest_native_sekolah/features/school_units/model"
+	serviceschoolunits "go_rest_native_sekolah/features/school_units/service"
+
 	"go_rest_native_sekolah/helper"
 	"net/http"
 	"strconv"
@@ -63,6 +67,8 @@ func InitRouter(db *pgxpool.Pool) http.Handler {
 	dashboardRouter(mux, db)
 	// Endpoint /jadwal digunakan untuk jadwal pelajaran sekolah & mengajar guru
 	jadwalRouter(mux, db)
+	// Endpoint /school-units digunakan untuk manajemen unit sekolah yayasan (Super Admin Yayasan)
+	schoolUnitsRouter(mux, db)
 
 	// Bungkus mux dengan middleware logging dan cors
 	return helper.CORSMiddleware(helper.LoggingMiddleware(mux, db))
@@ -556,6 +562,74 @@ func jadwalRouter(mux *http.ServeMux, db *pgxpool.Pool) {
 	mux.HandleFunc("/jadwal/deleted", helper.AuthMiddleware(helper.RolesAllowedMiddleware(db, allowedRoles, func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodDelete || r.Method == http.MethodPut {
 			err := jadwalController.Delete(w, r)
+			if err != nil {
+				helper.JSONResponse(w, http.StatusInternalServerError, err.Error())
+			}
+		} else {
+			helper.JSONResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
+		}
+	})))
+}
+
+func schoolUnitsRouter(mux *http.ServeMux, db *pgxpool.Pool) {
+	unitRepo := schoolunitsmodels.NewSchoolUnitModel(db)
+	unitService := serviceschoolunits.NewSchoolUnitService(unitRepo)
+	unitController := schoolunitscontroller.NewSchoolUnitController(unitService)
+
+	allowedReadRoles := []string{"super_admin", "admin"}
+
+	// GET /school-units - Mengambil daftar seluruh unit sekolah
+	mux.HandleFunc("/school-units", helper.AuthMiddleware(helper.RolesAllowedMiddleware(db, allowedReadRoles, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			err := unitController.GetAll(w, r)
+			if err != nil {
+				helper.JSONResponse(w, http.StatusInternalServerError, err.Error())
+			}
+		} else {
+			helper.JSONResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
+		}
+	})))
+
+	// GET /school-units/detail?id=... - Mengambil rincian unit sekolah
+	mux.HandleFunc("/school-units/detail", helper.AuthMiddleware(helper.RolesAllowedMiddleware(db, allowedReadRoles, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			err := unitController.GetByID(w, r)
+			if err != nil {
+				helper.JSONResponse(w, http.StatusInternalServerError, err.Error())
+			}
+		} else {
+			helper.JSONResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
+		}
+	})))
+
+	// POST /school-units/tambah - Menambah unit sekolah baru (Khusus Super Admin Yayasan)
+	mux.HandleFunc("/school-units/tambah", helper.AuthMiddleware(helper.SuperAdminOnlyMiddleware(db, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			err := unitController.Create(w, r)
+			if err != nil {
+				helper.JSONResponse(w, http.StatusInternalServerError, err.Error())
+			}
+		} else {
+			helper.JSONResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
+		}
+	})))
+
+	// PUT & POST /school-units/update?id=... - Mengubah profil unit sekolah (Khusus Super Admin Yayasan)
+	mux.HandleFunc("/school-units/update", helper.AuthMiddleware(helper.SuperAdminOnlyMiddleware(db, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost || r.Method == http.MethodPut {
+			err := unitController.Update(w, r)
+			if err != nil {
+				helper.JSONResponse(w, http.StatusInternalServerError, err.Error())
+			}
+		} else {
+			helper.JSONResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
+		}
+	})))
+
+	// DELETE & PUT /school-units/deleted?id=... - Menghapus unit sekolah secara soft delete (Khusus Super Admin Yayasan)
+	mux.HandleFunc("/school-units/deleted", helper.AuthMiddleware(helper.SuperAdminOnlyMiddleware(db, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodDelete || r.Method == http.MethodPut {
+			err := unitController.Delete(w, r)
 			if err != nil {
 				helper.JSONResponse(w, http.StatusInternalServerError, err.Error())
 			}

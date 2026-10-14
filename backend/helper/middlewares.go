@@ -140,6 +140,11 @@ func AdminOnlyMiddleware(db *pgxpool.Pool, next http.HandlerFunc) http.HandlerFu
 	return RolesAllowedMiddleware(db, []string{"admin", "super_admin"}, next)
 }
 
+// SuperAdminOnlyMiddleware memastikan request khusus dilakukan oleh Super Admin Yayasan
+func SuperAdminOnlyMiddleware(db *pgxpool.Pool, next http.HandlerFunc) http.HandlerFunc {
+	return RolesAllowedMiddleware(db, []string{"super_admin"}, next)
+}
+
 // UserSelfOrAdminMiddleware mengizinkan admin untuk melihat/mengakses siapa saja,
 // sedangkan role lain (guru/user) hanya boleh mengakses datanya sendiri berdasarkan ID
 func UserSelfOrAdminMiddleware(db *pgxpool.Pool, next http.HandlerFunc) http.HandlerFunc {
