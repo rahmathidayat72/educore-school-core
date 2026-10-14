@@ -179,3 +179,24 @@
   - `go test -v ./features/academic_years/...` berstatus `PASS` (seluruh skenario pengujian unit service dan controller lulus 100%).
   - `go test ./...` berstatus `PASS` (zero regression di seluruh 11 modul backend).
   - `go build ./...` sukses tanpa error maupun peringatan kompilasi.
+
+### [2026-10-14] Task 04.3 — Pembuatan Tabel Relasi Wali Murid (guardians dan student_guardians)
+- **Status:** `✅ Selesai dan terverifikasi`
+- **Requirement:** OBJ-001, BUS-005, FR-008, NFR-SEC-001
+- **Tindakan:**
+  1. Menulis skrip migrasi UP `000006_create_guardians_and_student_guardians.up.sql`:
+     - Tabel `guardians`: `id`, `user_id` (FK ke `users(id)`), `nama`, `nik`, `hubungan`, `pekerjaan`, `penghasilan`, `telepon`, `email`, `alamat`.
+     - Tabel `student_guardians`: `id`, `guardian_id` (FK ke `guardians(id)`), `siswa_id` (FK ke `siswa(id)`), `is_primary`.
+     - Unique index `idx_student_guardians_unique` pada `(guardian_id, siswa_id)` WHERE `delete_at IS NULL` untuk mencegah duplikasi pendaftaran relasi.
+     - Backfill otomatis dari siswa existing yang memiliki data `nama_wali` dan `no_telepon_wali` ke tabel `guardians` dan `student_guardians`.
+  2. Menulis skrip migrasi DOWN `000006_create_guardians_and_student_guardians.down.sql` untuk rollback aman.
+  3. Mengimplementasikan domain entities, DTOs, dan interfaces di `backend/features/guardians/entities.go` (mendukung `SiswaList` multi-anak per wali murid).
+  4. Mengimplementasikan data layer model database PostgreSQL di `backend/features/guardians/model/query.go` dengan query parameterized dan join info siswa, kelas, dan unit sekolah.
+  5. Mengimplementasikan business logic service layer di `backend/features/guardians/service/logic.go` dengan validasi data, normalisasi hubungan (Ayah, Ibu, Wali, Kakak), pemutusan relasi (`UnlinkStudent`), dan penautan siswa (`LinkStudent`).
+  6. Menulis unit testing komprehensif di `backend/features/guardians/service/logic_test.go` dan `backend/features/guardians/controllers/controller_test.go`.
+  7. Mengimplementasikan presentation HTTP layer di `backend/features/guardians/controllers/controller.go` dan formatter di `formatter.go`.
+  8. Mendaftarkan route HTTP `/guardians`, `/guardians/detail`, `/guardians/my-profile`, `/guardians/tambah`, `/guardians/update`, `/guardians/deleted`, `/guardians/link-student`, `/guardians/unlink-student`, `/guardians/students`, dan `/guardians/by-student` pada `backend/router/router.go`.
+- **Bukti / Verifikasi:**
+  - `go test -v ./features/guardians/...` berstatus `PASS` (seluruh skenario pengujian unit service dan controller lulus 100%).
+  - `go test ./...` berstatus `PASS` (zero regression di seluruh modul backend).
+  - `go build ./...` sukses tanpa error maupun peringatan kompilasi.

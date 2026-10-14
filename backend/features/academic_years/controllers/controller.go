@@ -116,6 +116,7 @@ func (c *AcademicYearController) CreateYear(w http.ResponseWriter, r *http.Reque
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
 	res := helper.APIResponse(http.StatusCreated, "Berhasil membuat tahun ajaran baru", ToYearResponse(*created))
 	return json.NewEncoder(w).Encode(res)
 }
@@ -301,6 +302,7 @@ func (c *AcademicYearController) EnrollStudent(w http.ResponseWriter, r *http.Re
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
 	res := helper.APIResponse(http.StatusCreated, "Berhasil mendaftarkan siswa ke kelas", ToEnrollmentResponse(*created))
 	return json.NewEncoder(w).Encode(res)
 }

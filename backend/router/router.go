@@ -40,6 +40,10 @@ import (
 	academicyearsmodels "go_rest_native_sekolah/features/academic_years/model"
 	serviceacademicyears "go_rest_native_sekolah/features/academic_years/service"
 
+	guardianscontroller "go_rest_native_sekolah/features/guardians/controllers"
+	guardiansmodels "go_rest_native_sekolah/features/guardians/model"
+	serviceguardians "go_rest_native_sekolah/features/guardians/service"
+
 	"go_rest_native_sekolah/helper"
 	"net/http"
 	"strconv"
@@ -75,6 +79,8 @@ func InitRouter(db *pgxpool.Pool) http.Handler {
 	schoolUnitsRouter(mux, db)
 	// Endpoint /academic-years dan /class-enrollments untuk pengelolaan tahun ajaran & riwayat kelas siswa
 	academicYearsRouter(mux, db)
+	// Endpoint /guardians untuk master data orang tua/wali murid & relasi student_guardians
+	guardiansRouter(mux, db)
 
 	// Bungkus mux dengan middleware logging dan cors
 	return helper.CORSMiddleware(helper.LoggingMiddleware(mux, db))
@@ -778,6 +784,118 @@ func academicYearsRouter(mux *http.ServeMux, db *pgxpool.Pool) {
 	mux.HandleFunc("/class-enrollments/student-history", helper.AuthMiddleware(helper.RolesAllowedMiddleware(db, allowedReadRoles, func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
 			if err := ayController.GetStudentEnrollmentHistory(w, r); err != nil {
+				helper.JSONResponse(w, http.StatusInternalServerError, err.Error())
+			}
+		} else {
+			helper.JSONResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
+		}
+	})))
+}
+
+func guardiansRouter(mux *http.ServeMux, db *pgxpool.Pool) {
+	gRepo := guardiansmodels.NewGuardianModel(db)
+	gService := serviceguardians.NewGuardianService(gRepo)
+	gController := guardianscontroller.NewGuardianController(gService)
+
+	allowedAdminRoles := []string{"super_admin", "admin"}
+	allowedStaffRoles := []string{"super_admin", "admin", "guru"}
+	allowedPortalRoles := []string{"super_admin", "admin", "guru", "wali"}
+
+	// --- Guardians Master Endpoints ---
+	mux.HandleFunc("/guardians", helper.AuthMiddleware(helper.RolesAllowedMiddleware(db, allowedStaffRoles, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			if err := gController.GetAll(w, r); err != nil {
+				helper.JSONResponse(w, http.StatusInternalServerError, err.Error())
+			}
+		} else {
+			helper.JSONResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
+		}
+	})))
+
+	mux.HandleFunc("/guardians/detail", helper.AuthMiddleware(helper.RolesAllowedMiddleware(db, allowedStaffRoles, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			if err := gController.GetByID(w, r); err != nil {
+				helper.JSONResponse(w, http.StatusInternalServerError, err.Error())
+			}
+		} else {
+			helper.JSONResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
+		}
+	})))
+
+	mux.HandleFunc("/guardians/my-profile", helper.AuthMiddleware(helper.RolesAllowedMiddleware(db, allowedPortalRoles, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			if err := gController.GetMyProfile(w, r); err != nil {
+				helper.JSONResponse(w, http.StatusInternalServerError, err.Error())
+			}
+		} else {
+			helper.JSONResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
+		}
+	})))
+
+	mux.HandleFunc("/guardians/tambah", helper.AuthMiddleware(helper.RolesAllowedMiddleware(db, allowedAdminRoles, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			if err := gController.Create(w, r); err != nil {
+				helper.JSONResponse(w, http.StatusInternalServerError, err.Error())
+			}
+		} else {
+			helper.JSONResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
+		}
+	})))
+
+	mux.HandleFunc("/guardians/update", helper.AuthMiddleware(helper.RolesAllowedMiddleware(db, allowedAdminRoles, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost || r.Method == http.MethodPut {
+			if err := gController.Update(w, r); err != nil {
+				helper.JSONResponse(w, http.StatusInternalServerError, err.Error())
+			}
+		} else {
+			helper.JSONResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
+		}
+	})))
+
+	mux.HandleFunc("/guardians/deleted", helper.AuthMiddleware(helper.RolesAllowedMiddleware(db, allowedAdminRoles, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost || r.Method == http.MethodDelete {
+			if err := gController.Delete(w, r); err != nil {
+				helper.JSONResponse(w, http.StatusInternalServerError, err.Error())
+			}
+		} else {
+			helper.JSONResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
+		}
+	})))
+
+	// --- Student Guardians Relation Endpoints ---
+	mux.HandleFunc("/guardians/link-student", helper.AuthMiddleware(helper.RolesAllowedMiddleware(db, allowedAdminRoles, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			if err := gController.LinkStudent(w, r); err != nil {
+				helper.JSONResponse(w, http.StatusInternalServerError, err.Error())
+			}
+		} else {
+			helper.JSONResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
+		}
+	})))
+
+	mux.HandleFunc("/guardians/unlink-student", helper.AuthMiddleware(helper.RolesAllowedMiddleware(db, allowedAdminRoles, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost || r.Method == http.MethodDelete {
+			if err := gController.UnlinkStudent(w, r); err != nil {
+				helper.JSONResponse(w, http.StatusInternalServerError, err.Error())
+			}
+		} else {
+			helper.JSONResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
+		}
+	})))
+
+	mux.HandleFunc("/guardians/students", helper.AuthMiddleware(helper.RolesAllowedMiddleware(db, allowedPortalRoles, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			if err := gController.GetStudentsByGuardianID(w, r); err != nil {
+				helper.JSONResponse(w, http.StatusInternalServerError, err.Error())
+			}
+		} else {
+			helper.JSONResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
+		}
+	})))
+
+	mux.HandleFunc("/guardians/by-student", helper.AuthMiddleware(helper.RolesAllowedMiddleware(db, allowedStaffRoles, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			if err := gController.GetGuardiansBySiswaID(w, r); err != nil {
 				helper.JSONResponse(w, http.StatusInternalServerError, err.Error())
 			}
 		} else {
