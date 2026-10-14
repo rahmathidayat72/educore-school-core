@@ -91,7 +91,7 @@
           <div class="overflow-hidden">
             <div class="text-white text-truncate small fw-bold">{{ authStore.currentUser?.username || 'Pengguna' }}</div>
             <div class="text-secondary text-truncate" style="font-size: 0.7rem;">
-              {{ authStore.isAdmin ? 'Admin' : (authStore.isGuru ? 'Guru' : 'Pengguna') }} &bull; {{ authStore.currentUser?.email || '' }}
+              {{ authStore.isSuperAdmin ? 'Super Admin' : (authStore.isAdmin ? 'Admin' : (authStore.isGuru ? 'Guru' : 'Pengguna')) }} &bull; {{ authStore.currentUser?.email || '' }}
             </div>
           </div>
         </div>

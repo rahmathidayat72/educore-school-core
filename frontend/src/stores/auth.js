@@ -52,28 +52,37 @@ export const useAuthStore = defineStore('auth', {
     },
     canManageGuru: (state) => {
       if (!state.user) return false
-      if (state.user.role) return String(state.user.role).trim().toLowerCase() === 'admin'
+      if (state.user.role) {
+        const r = String(state.user.role).trim().toLowerCase()
+        return r === 'admin' || r === 'super_admin'
+      }
       return state.user.email === 'admin@sekolah.id' || state.user.username === 'admin'
     },
     canManageSiswa: (state) => {
       if (!state.user) return false
-      if (state.user.role) return String(state.user.role).trim().toLowerCase() === 'admin'
+      if (state.user.role) {
+        const r = String(state.user.role).trim().toLowerCase()
+        return r === 'admin' || r === 'super_admin'
+      }
       return state.user.email === 'admin@sekolah.id' || state.user.username === 'admin'
     },
     canManageUsers: (state) => {
       if (!state.user) return false
-      if (state.user.role) return String(state.user.role).trim().toLowerCase() === 'admin'
+      if (state.user.role) {
+        const r = String(state.user.role).trim().toLowerCase()
+        return r === 'admin' || r === 'super_admin'
+      }
       return state.user.email === 'admin@sekolah.id' || state.user.username === 'admin'
     },
     canManageKelas: (state) => {
       if (!state.user) return false
       const r = String(state.user.role || '').trim().toLowerCase()
-      return r === 'admin' || r === 'guru' || state.user.email === 'admin@sekolah.id' || state.user.username === 'admin'
+      return r === 'admin' || r === 'super_admin' || r === 'guru' || state.user.email === 'admin@sekolah.id' || state.user.username === 'admin'
     },
     canManageMapel: (state) => {
       if (!state.user) return false
       const r = String(state.user.role || '').trim().toLowerCase()
-      return r === 'admin' || r === 'guru' || state.user.email === 'admin@sekolah.id' || state.user.username === 'admin'
+      return r === 'admin' || r === 'super_admin' || r === 'guru' || state.user.email === 'admin@sekolah.id' || state.user.username === 'admin'
     },
     portalTitle: (state) => {
       if (!state.user) return 'Portal Sekolah'
