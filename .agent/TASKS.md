@@ -43,3 +43,9 @@
 - [x] `task-07.1`: Standarisasi REST alias endpoint untuk modul satelit. (Status: `✅ Selesai dan terverifikasi`)
 - [x] `task-07.2`: Update koleksi Bruno testing (`backend/bruno/`). (Status: `✅ Selesai dan terverifikasi`)
 - [x] `task-07.3`: Pengujian regresi penuh & final acceptance report. (Status: `✅ Selesai dan terverifikasi`)
+
+### Phase 08: Frontend Satellite Modules Integration
+- [x] `task-08.1`: Pembuatan API client & tampilan Master Unit Sekolah Yayasan (`UnitSekolah.vue`). (Status: `✅ Selesai dan terverifikasi`)
+- [x] `task-08.2`: Pembuatan tampilan Manajemen Periode Tahun Ajaran (`TahunAjaran.vue`). (Status: `✅ Selesai dan terverifikasi`)
+- [x] `task-08.3`: Pembuatan tampilan Direktori Master & Penautan Wali Murid (`WaliMurid.vue`). (Status: `✅ Selesai dan terverifikasi`)
+- [x] `task-08.4`: Integrasi Navigasi Sidebar, Route Guards, & Verifikasi Build. (Status: `✅ Selesai dan terverifikasi`)

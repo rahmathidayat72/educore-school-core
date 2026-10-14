@@ -31,11 +31,17 @@ export const useAuthStore = defineStore('auth', {
   getters: {
     isAuthenticated: (state) => !!state.token,
     currentUser: (state) => state.user,
+    isSuperAdmin: (state) => {
+      if (!state.user) return false
+      const r = String(state.user.role || '').trim().toLowerCase()
+      return r === 'super_admin'
+    },
     isAdmin: (state) => {
       if (!state.user) return false
       // Jika field role ada, periksa nilai eksplisitnya
       if (state.user.role) {
-        return String(state.user.role).trim().toLowerCase() === 'admin'
+        const r = String(state.user.role).trim().toLowerCase()
+        return r === 'admin' || r === 'super_admin'
       }
       // Khusus penanganan akun admin default pada sesi lama
       return state.user.email === 'admin@sekolah.id' || state.user.username === 'admin'

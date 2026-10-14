@@ -12,6 +12,9 @@ import Siswa from '@/views/admin/Siswa.vue'
 import MataPelajaran from '@/views/admin/MataPelajaran.vue'
 import JadwalPelajaran from '@/views/admin/JadwalPelajaran.vue'
 import Logs from '@/views/admin/Logs.vue'
+import UnitSekolah from '@/views/admin/UnitSekolah.vue'
+import TahunAjaran from '@/views/admin/TahunAjaran.vue'
+import WaliMurid from '@/views/admin/WaliMurid.vue'
 
 const routes = [
   {
@@ -69,13 +72,31 @@ const routes = [
         path: 'jadwal',
         name: 'AdminJadwal',
         component: JadwalPelajaran,
-        meta: { roles: ['admin', 'guru'] },
+        meta: { roles: ['super_admin', 'admin', 'guru'] },
+      },
+      {
+        path: 'unit-sekolah',
+        name: 'AdminUnitSekolah',
+        component: UnitSekolah,
+        meta: { roles: ['super_admin'] },
+      },
+      {
+        path: 'tahun-ajaran',
+        name: 'AdminTahunAjaran',
+        component: TahunAjaran,
+        meta: { roles: ['super_admin', 'admin'] },
+      },
+      {
+        path: 'wali-murid',
+        name: 'AdminWaliMurid',
+        component: WaliMurid,
+        meta: { roles: ['super_admin', 'admin', 'guru'] },
       },
       {
         path: 'logs',
         name: 'AdminLogs',
         component: Logs,
-        meta: { roles: ['admin'] },
+        meta: { roles: ['super_admin', 'admin'] },
       },
     ],
   },

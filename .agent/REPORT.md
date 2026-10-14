@@ -308,3 +308,15 @@
   - `go test ./...` berstatus `PASS` (Zero regression di seluruh 12 paket backend Go).
   - `go build ./...` berstatus `PASS` (Binary backend terkompilasi bersih).
   - `npm run build` di `frontend/` berstatus `PASS` (Vite client production build sukses dalam 943ms tanpa error).
+
+### [2026-10-14] Phase 08 — Frontend Satellite Modules Integration (Task 08.1 - 08.4)
+- **Status:** `✅ Selesai dan terverifikasi`
+- **Requirement:** BUS-001, FR-001, FR-002, FR-003, NFR-UX-001, NFR-SEC-001
+- **Tindakan:**
+  1. `task-08.1`: Pembuatan API client `frontend/src/api/schoolUnitsApi.js` dan antarmuka `frontend/src/views/admin/UnitSekolah.vue` untuk manajemen unit yayasan lintas jenjang (TK, SD, SMP, SMA, SMK).
+  2. `task-08.2`: Pembuatan antarmuka `frontend/src/views/admin/TahunAjaran.vue` untuk kalender akademik, semester Ganjil/Genap, dan aktivasi cepat periode berjalan.
+  3. `task-08.3`: Pembuatan antarmuka `frontend/src/views/admin/WaliMurid.vue` untuk master direktori wali murid dan penautan anak asuhan (*Link/Unlink Student*) secara interaktif.
+  4. `task-08.4`: Pendaftaran rute di `frontend/src/router/index.js`, penambahan menu navigasi di `frontend/src/components/SidebarAdmin.vue` dengan pembatasan hak akses berbasis role (`super_admin`, `admin`, `guru`), serta update getter `isSuperAdmin` di `frontend/src/stores/auth.js`.
+- **Bukti / Verifikasi:**
+  - `npm run build` di `frontend/` berstatus `PASS` (Vite production build sukses dalam 1.05s).
+  - `go test ./...` dan `go build ./...` di `backend/` berstatus `PASS` (Zero regression).

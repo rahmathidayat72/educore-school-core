@@ -46,6 +46,21 @@
           <span>Jadwal Pelajaran</span>
         </router-link>
 
+        <router-link v-if="authStore.isAdmin || authStore.isGuru" to="/admin/wali-murid" class="nav-link">
+          <i class="fas fa-user-friends fa-fw"></i>
+          <span>Wali Murid</span>
+        </router-link>
+
+        <router-link v-if="authStore.isAdmin" to="/admin/tahun-ajaran" class="nav-link">
+          <i class="fas fa-calendar-check fa-fw"></i>
+          <span>Tahun Ajaran</span>
+        </router-link>
+
+        <router-link v-if="authStore.isSuperAdmin" to="/admin/unit-sekolah" class="nav-link">
+          <i class="fas fa-city fa-fw"></i>
+          <span>Unit Sekolah</span>
+        </router-link>
+
         <div v-if="authStore.isAdmin" class="px-3 my-2 text-uppercase text-secondary fw-semibold" style="font-size: 0.7rem; letter-spacing: 0.05em;">
           Sistem
         </div>
