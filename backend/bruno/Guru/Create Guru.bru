@@ -1,0 +1,32 @@
+meta {
+  name: Create Guru
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/guru/tambah
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "id_user": "your_user_id_here",
+    "nama": "Pak Budi Santoso",
+    "email": "budi.santoso@sekolah.id",
+    "alamat": "Jl. Pendidikan No. 10, Jakarta"
+  }
+}
+
+assert {
+  res.status: eq 201
+}

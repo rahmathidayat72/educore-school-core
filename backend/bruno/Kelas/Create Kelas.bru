@@ -1,0 +1,30 @@
+meta {
+  name: Create Kelas
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/kelas/tambah
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "kelas": "10-IPA-1",
+    "id_guru": "your_guru_id_here"
+  }
+}
+
+assert {
+  res.status: eq 201
+}

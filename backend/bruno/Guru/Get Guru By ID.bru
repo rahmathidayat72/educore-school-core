@@ -1,0 +1,23 @@
+meta {
+  name: Get Guru By ID
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/guru/gurubyid?id=your_guru_id_here
+  body: none
+  auth: bearer
+}
+
+params:query {
+  id: your_guru_id_here
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+assert {
+  res.status: eq 200
+}

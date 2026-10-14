@@ -1,0 +1,32 @@
+meta {
+  name: Create Siswa
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/siswa/tambah
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "nama": "Ahmad Rizky",
+    "kelas_id": "your_kelas_id_here",
+    "email": "ahmad.rizky@sekolah.id",
+    "alamat": "Jl. Mawar No. 5, Jakarta"
+  }
+}
+
+assert {
+  res.status: eq 201
+}

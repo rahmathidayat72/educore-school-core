@@ -1,0 +1,32 @@
+meta {
+  name: Create Mapel
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/mapel/tambah
+  body: json
+  auth: bearer
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "mata_pelajaran": "Matematika",
+    "id_guru": "your_guru_id_here",
+    "kelas_id": "your_kelas_id_here",
+    "deskripsi": "Mata pelajaran Matematika Wajib Kelas 10"
+  }
+}
+
+assert {
+  res.status: eq 201
+}

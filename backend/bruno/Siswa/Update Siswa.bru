@@ -1,0 +1,36 @@
+meta {
+  name: Update Siswa
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/siswa/update?id=your_siswa_id_here
+  body: json
+  auth: bearer
+}
+
+params:query {
+  id: your_siswa_id_here
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "nama": "Ahmad Rizky Pratama",
+    "kelas_id": "your_kelas_id_here",
+    "email": "ahmad.rizky@sekolah.id",
+    "alamat": "Jl. Mawar No. 7, Jakarta"
+  }
+}
+
+assert {
+  res.status: eq 200
+}

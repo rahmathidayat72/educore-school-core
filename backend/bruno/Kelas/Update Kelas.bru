@@ -1,0 +1,34 @@
+meta {
+  name: Update Kelas
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/kelas/update?id=your_kelas_id_here
+  body: json
+  auth: bearer
+}
+
+params:query {
+  id: your_kelas_id_here
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "kelas": "10-IPA-2",
+    "id_guru": "your_guru_id_here"
+  }
+}
+
+assert {
+  res.status: eq 200
+}

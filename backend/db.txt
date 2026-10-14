@@ -1,0 +1,145 @@
+-- 1. Tabel User (untuk autentikasi dan otorisasi)
+CREATE TABLE users (
+    id TEXT PRIMARY KEY,
+    username VARCHAR(100) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    role VARCHAR(50) CHECK (role IN ('admin', 'user', 'guru')) NOT NULL,
+    update_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    delete_at TIMESTAMP
+);
+
+-- 2. Tabel Guru
+CREATE TABLE guru (
+    id TEXT PRIMARY KEY,
+    id_user TEXT NOT NULL,
+    nama VARCHAR(100) NOT NULL,
+    nip VARCHAR(30),
+    nuptk VARCHAR(30),
+    jenis_kelamin VARCHAR(15),
+    tempat_lahir VARCHAR(100),
+    tanggal_lahir DATE,
+    no_telepon VARCHAR(25),
+    agama VARCHAR(30),
+    pendidikan_terakhir VARCHAR(50),
+    status_kepegawaian VARCHAR(50),
+    email VARCHAR(100) UNIQUE,
+    alamat TEXT,
+    update_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    delete_at TIMESTAMP,
+    CONSTRAINT fk_guru_user FOREIGN KEY (id_user) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- 3. Tabel Kelas
+CREATE TABLE kelas (
+    id TEXT PRIMARY KEY,
+    kelas VARCHAR(50) NOT NULL,
+    kode_kelas VARCHAR(30),
+    tingkat VARCHAR(10),
+    fase VARCHAR(10),
+    jurusan VARCHAR(50),
+    tahun_ajaran VARCHAR(20) DEFAULT '2026/2027',
+    ruangan VARCHAR(50),
+    kapasitas INTEGER DEFAULT 36,
+    status VARCHAR(30) DEFAULT 'Aktif',
+    deskripsi TEXT,
+    id_guru TEXT,
+    update_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    delete_at TIMESTAMP,
+    CONSTRAINT fk_kelas_guru FOREIGN KEY (id_guru) REFERENCES guru(id) ON DELETE SET NULL
+);
+
+-- 4. Tabel Siswa
+CREATE TABLE siswa (
+    id TEXT PRIMARY KEY,
+    nama VARCHAR(100) NOT NULL,
+    kelas_id TEXT NOT NULL,
+    nis VARCHAR(30),
+    nisn VARCHAR(30),
+    jenis_kelamin VARCHAR(15),
+    tempat_lahir VARCHAR(100),
+    tanggal_lahir DATE,
+    agama VARCHAR(30),
+    no_telepon VARCHAR(25),
+    nama_wali VARCHAR(100),
+    no_telepon_wali VARCHAR(25),
+    tahun_masuk VARCHAR(10),
+    status VARCHAR(30) DEFAULT 'Aktif',
+    email VARCHAR(100) UNIQUE,
+    alamat TEXT,
+    update_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    delete_at TIMESTAMP,
+    CONSTRAINT fk_siswa_kelas FOREIGN KEY (kelas_id) REFERENCES kelas(id) ON DELETE SET NULL
+);
+
+-- 5. Tabel Mata Pelajaran
+CREATE TABLE mata_pelajaran (
+    id TEXT PRIMARY KEY,
+    nama_pelajaran VARCHAR(100) NOT NULL,
+    kode_mapel VARCHAR(30),
+    kelompok VARCHAR(50),
+    kurikulum VARCHAR(50) DEFAULT 'Kurikulum Merdeka',
+    tingkat VARCHAR(10),
+    fase VARCHAR(10),
+    jam_per_minggu INTEGER DEFAULT 2,
+    kkm NUMERIC(5,2) DEFAULT 75.00,
+    status VARCHAR(30) DEFAULT 'Aktif',
+    id_guru TEXT,
+    kelas_id TEXT,
+    deskripsi TEXT,
+    update_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    delete_at TIMESTAMP,
+    CONSTRAINT fk_mapel_guru FOREIGN KEY (id_guru) REFERENCES guru(id) ON DELETE SET NULL,
+    CONSTRAINT fk_mapel_kelas FOREIGN KEY (kelas_id) REFERENCES kelas(id) ON DELETE SET NULL
+);
+
+-- 6. Transaction Logs (Audit Log)
+--    Untuk mencatat proses berhasil maupun gagal beserta detail aktivitas pengguna
+create table transaction_logs ( 
+    id SERIAL primary key,
+    timestamp TIMESTAMPTZ not null default current_timestamp,
+    user_id VARCHAR(255) not null,
+    activity_type VARCHAR(50),
+    activity_description TEXT,
+    http_method VARCHAR(10),
+    endpoint TEXT,
+    module VARCHAR(100),
+    target_id VARCHAR(255),
+    status_code INTEGER,
+    ip_address VARCHAR(100),
+    duration_ms BIGINT,
+    perangkat VARCHAR(255) not null,
+    service_name VARCHAR(255) not null,
+    request_body JSONB,
+    response_body JSONB,
+    request_param JSONB,
+    result TEXT,
+    header JSONB 
+);
+
+-- 7. Tabel Jadwal Pelajaran
+CREATE TABLE jadwal_pelajaran (
+    id TEXT PRIMARY KEY,
+    kode_jadwal VARCHAR(50),
+    mata_pelajaran_id TEXT NOT NULL,
+    guru_id TEXT,
+    kelas_id TEXT,
+    hari INTEGER NOT NULL CHECK (hari BETWEEN 1 AND 7), -- 1: Senin, 2: Selasa, ..., 7: Minggu
+    jam_ke_mulai INTEGER,
+    jam_ke_selesai INTEGER,
+    jam_mulai TIME NOT NULL,
+    jam_selesai TIME NOT NULL,
+    ruang VARCHAR(100),
+    jenis_kegiatan VARCHAR(50) DEFAULT 'Tatap Muka',
+    tahun_ajaran VARCHAR(50) DEFAULT '2026/2027',
+    semester VARCHAR(20) DEFAULT 'Ganjil',
+    keterangan TEXT,
+    aktif BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    update_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    delete_at TIMESTAMPTZ,
+    CONSTRAINT fk_jadwal_mapel FOREIGN KEY (mata_pelajaran_id) REFERENCES mata_pelajaran(id) ON DELETE CASCADE,
+    CONSTRAINT fk_jadwal_guru FOREIGN KEY (guru_id) REFERENCES guru(id) ON DELETE SET NULL,
+    CONSTRAINT fk_jadwal_kelas FOREIGN KEY (kelas_id) REFERENCES kelas(id) ON DELETE SET NULL,
+    CONSTRAINT chk_jam_jadwal CHECK (jam_selesai > jam_mulai)
+);

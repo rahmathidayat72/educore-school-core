@@ -1,0 +1,194 @@
+[
+  {
+    "order": 1,
+    "user_prompt": "Bantu saya set up aplikasi ini agar bisa jalan di local saya",
+    "status": "Success",
+    "actions": [
+      "Menganalisis arsitektur Go native, file .exp.env, db.txt, dan koneksi PostgreSQL lokal",
+      "Membuat database PostgreSQL `sekolah_db`",
+      "Mengimpor seluruh schema tabel DDL dari `db.txt`",
+      "Membuat file `.env` dan `.dev.env`",
+      "Mendaftarkan user admin default untuk keperluan pengujian",
+      "Menguji jalannya server backend pada port 8080"
+    ]
+  },
+  {
+    "order": 2,
+    "user_prompt": "Balikin password db nya ke 1997",
+    "status": "Success",
+    "actions": [
+      "Mengubah password user `postgres` dan `rahmath` di PostgreSQL menjadi '1997'",
+      "Memperbarui parameter DBPASS=1997 pada file `.env` dan `.dev.env`",
+      "Menguji ulang koneksi database dengan password baru"
+    ]
+  },
+  {
+    "order": 3,
+    "user_prompt": "Buatkan file testinya untuk aplikasi bruno",
+    "status": "Success",
+    "actions": [
+      "Membuat direktori koleksi `bruno/`",
+      "Menyusun konfigurasi `bruno.json` dan `environments/Local.bru`",
+      "Menambahkan endpoint login dengan post-response script penangkap JWT token",
+      "Menyusun file `.bru` untuk seluruh modul CRUD: Users, Guru, Kelas, Siswa, dan Mata Pelajaran"
+    ]
+  },
+  {
+    "order": 4,
+    "user_prompt": "Selanjutnya saya ingin membuat frond end nya di folder terpisah, tapi sesuaikan dengan andpoint yang ada , siapkan persiapan developnya",
+    "status": "Success",
+    "actions": [
+      "Menganalisis ketersediaan Node.js v24 dan npm v11",
+      "Menyusun rancangan tech stack frontend dan mapping setiap endpoint backend",
+      "Mendiskusikan penanganan CORS antara frontend (port 5173) dan backend (port 8080)"
+    ]
+  },
+  {
+    "order": 5,
+    "user_prompt": "1. lokasi forder :~/Documents/rahmath/ nantik buat folder app sekolah masukan ke dalam foldernya backend nta dan buat juga folder froend di dalam foldernya | 2. saya mau vue | 3. rekomendasi mu apa? | Satu lagi kamu bisa mengikuti desain themplate dari '/home/rahmath/Documents/rahmath/sistem_informasi_sekolah_go_native/template-website-sekolah'",
+    "status": "Success",
+    "actions": [
+      "Menganalisis isi `template-website-sekolah/template-website-sekolah.html`",
+      "Menyusun rencana integrasi halaman depan publik berbasis template sekolah serta dashboard admin untuk CRUD"
+    ]
+  },
+  {
+    "order": 6,
+    "user_prompt": "Oke ekseskusi untuk persiapanya",
+    "status": "Success",
+    "actions": [
+      "Membuat direktori `/home/rahmath/Documents/rahmath/app_sekolah/backend` dan menyalin seluruh source code backend ke dalamnya",
+      "Menambahkan `CORSMiddleware` di `backend/helper/middlewares.go` dan membungkus router di `backend/router/router.go`",
+      "Menginisialisasi aplikasi Vue 3 + Vite di `/home/rahmath/Documents/rahmath/app_sekolah/frontend`",
+      "Menginstall dependencies: vue-router, pinia, axios, bootstrap, @popperjs/core, @lucide/vue",
+      "Menyiapkan Axios instance dengan JWT interceptor dan penanganan auto-redirect 401",
+      "Membuat modul API per endpoint: authApi, userApi, guruApi, kelasApi, siswaApi, mapelApi",
+      "Membuat Pinia Auth Store dan Router dengan navigation guard",
+      "Membangun Landing Page publik sesuai tema `template-website-sekolah.html`",
+      "Membangun Halaman Login Portal dan Admin Dashboard beserta halaman CRUD lengkap",
+      "Menguji build produksi frontend (`npm run build`) dengan status lulus tanpa error",
+      "Membuat file `README.md` pada root `app_sekolah`"
+    ]
+  },
+  {
+    "order": 7,
+    "user_prompt": "cata yang kamu kerjakan dalam bentuk file json atau promt yang sudah di eksekusi di '/home/rahmath/Documents/rahmath/sistem_informasi_sekolah_go_native/history' untuk memudahkankan melanjutkan pekerjaan",
+    "status": "Success",
+    "actions": [
+      "Membuat direktori `/home/rahmath/Documents/rahmath/sistem_informasi_sekolah_go_native/history`",
+      "Menyimpan `execution_history.json` dan `prompts_and_execution.json`"
+    ]
+  },
+  {
+    "order": 8,
+    "user_prompt": "Tambahkan fitur log system untuk mengetahui aktifitas seiap user, tapi hanya di bisa di akses oleh role admin",
+    "status": "Success",
+    "actions": [
+      "Memperbarui controller login dan sign token JWT agar menyertakan klaim role pengguna",
+      "Membuat middleware `AdminOnlyMiddleware` di `backend/helper/middlewares.go` untuk memblokir akses non-admin dengan response 403 Forbidden",
+      "Membuat modul `backend/features/logs/` lengkap (entities, model PostgreSQL query dengan join data user, service logic, formatter, dan controller)",
+      "Mendaftarkan endpoint `GET /logs` dan `GET /logs/detail` di `backend/router/router.go` dengan proteksi AuthMiddleware dan AdminOnlyMiddleware",
+      "Membuat collection Bruno untuk pengujian endpoint log (`backend/bruno/Logs/`)",
+      "Menyediakan client API `frontend/src/api/logApi.js`",
+      "Membuat antarmuka riwayat log lengkap di `frontend/src/views/admin/Logs.vue` dengan fitur search, filter status, pagination, serta modal inspect payload request/response JSON",
+      "Menambahkan navigation guard admin pada route `/admin/logs` di `frontend/src/router/index.js`",
+      "Menambahkan menu navigasi 'Log Aktivitas' pada `frontend/src/components/SidebarAdmin.vue` hanya untuk role admin",
+      "Menjalankan verifikasi tes Go dan build produksi Vite (`npm run build`) dengan status lulus tanpa error"
+    ]
+  },
+  {
+    "order": 9,
+    "user_prompt": "Masih ada kesalahan role guru dan lainnya masih bisa akses menu log ,padahal hany admin yang boleh akses",
+    "status": "Success",
+    "actions": [
+      "Memperketat getter `isAdmin` di `src/stores/auth.js` hanya mengembalikan true jika role tepat 'admin' dan menghapus fallback otomatis",
+      "Memperbarui `backend/helper/middlewares.go` pada `AdminOnlyMiddleware` agar memvalidasi langsung ke database PostgreSQL tabel `users` berdasarkan `user_id` untuk memastikan role pengguna aktif adalah 'admin'",
+      "Menyembunyikan tombol 'Log Aktivitas' pada Aksi Cepat dan Status Sistem di `src/views/admin/Dashboard.vue` jika pengguna bukan admin",
+      "Menyembunyikan menu 'Log Aktivitas' di `src/components/SidebarAdmin.vue` jika pengguna bukan admin",
+      "Memperketat pengecekan navigation guard di `src/router/index.js` dan menambahkan redirect preventif di hook `onMounted` pada `src/views/admin/Logs.vue`",
+      "Verifikasi ulang build frontend Vite (`npm run build`) dan kompilasi Go backend"
+    ]
+  },
+  {
+    "order": 10,
+    "user_prompt": "Malah di role admin juga ikut hilang",
+    "status": "Success",
+    "actions": [
+      "Mengidentifikasi penyebab menu admin hilang: sesi login lokal sebelumnya tidak memiliki field role sehingga role bernilai undefined",
+      "Menambahkan mekanisme auto-healing dan sinkronisasi role di `src/stores/auth.js` yang secara otomatis mengenali akun admin lama dan memperbarui role ke localStorage",
+      "Menambahkan fungsi `syncUserRole()` yang memanggil API `/users/userbyid` saat inisialisasi aplikasi untuk menjaga konsistensi role dengan database PostgreSQL",
+      "Memastikan getter `isAdmin` mengembalikan true untuk admin dan false secara ketat untuk role guru dan user lainnya",
+      "Verifikasi build produksi frontend Vite (`npm run build`) dan kompilasi Go backend"
+    ]
+  },
+  {
+    "order": 11,
+    "user_prompt": "Perbaiki intuk info log tambahkan juga detail aktifitas user",
+    "status": "Success",
+    "actions": [
+      "Menjalankan migrasi DDL pada PostgreSQL untuk tabel `transaction_logs`: menambahkan kolom `activity_type`, `activity_description`, `http_method`, `endpoint`, `module`, `target_id`, `status_code`, `ip_address`, dan `duration_ms`",
+      "Memperbarui `backend/db.txt` dengan skema tabel `transaction_logs` terbaru",
+      "Mengembangkan logic `DetermineActivityDetail` di `backend/helper/transaksi_log.go` untuk mendeteksi modul, tipe aksi (CREATE, READ, UPDATE, DELETE, LOGIN), target ID, latency eksekusi request (ms), IP address klien, dan deskripsi kalimat yang informatif dan mudah dipahami",
+      "Menambahkan sanitasi header untuk menyembunyikan Bearer token JWT asli pada log database",
+      "Memperbarui entitas, model query, dan formatter di `backend/features/logs/` agar mendukung filter modul dan tipe aksi",
+      "Memperbarui halaman frontend `src/views/admin/Logs.vue` dengan tampilan visual detail aktivitas: badge modul, badge tipe aksi dengan warna spesifik, deskripsi kalimat ramah, IP address, durasi milidetik, filter modul dan tipe aksi, serta modal rincian inspeksi lengkap",
+      "Verifikasi build frontend Vite (`npm run build`) dan pengujian Go backend (`go test ./...`)"
+    ]
+  },
+  {
+    "order": 12,
+    "user_prompt": "Ini terlalu teknis untuk admin sekolah ,buat yang user frendly dan mudah di baca dan menampilaknd etail aktifitas user",
+    "status": "Success",
+    "actions": [
+      "Mengubah generator deskripsi aktivitas di `backend/helper/transaksi_log.go` (`DetermineActivityDetail`) menjadi kalimat bahasa Indonesia natural tanpa kode/tanda kurung teknis (misal: 'Admin Budi menambahkan siswa baru bernama Ahmad Rizky')",
+      "Mendesain ulang UI halaman log frontend `frontend/src/views/admin/Logs.vue` agar fokus pada kebutuhan admin sekolah (Siapa, Apa yang dilakukan, Data siapa/apa, Kapan, dan Status Berhasil/Gagal)",
+      "Mengganti filter teknis HTTP/CRUD menjadi bahasa Indonesia ramah: Masuk Sistem, Tambah Data, Ubah Data, Hapus Data, Melihat Data",
+      "Membuat modal rincian aktivitas yang menampilkan rangkuman ramah pengguna dan pemetaan atribut data (Nama Lengkap, Email, Kelas, Mata Pelajaran, dll) alih-alih raw JSON",
+      "Memindahkan seluruh detail teknis seperti HTTP method, status code, IP address, latency ms, dan raw payload JSON ke dalam accordion tersembunyi (Khusus Tim IT / Diagnostik)",
+      "Verifikasi build produksi frontend Vite (`npm run build`) dan kompilasi Go backend"
+    ]
+  },
+  {
+    "order": 13,
+    "user_prompt": "Oke untuk selanjutnya saya mau role guru hanya bisa mengelola data pelajaran dan kelas tidak bisa mengelola data guru, data gutu hanya bisa di kelola oleh admin",
+    "status": "Success",
+    "actions": [
+      "Menambahkan `RolesAllowedMiddleware` dan `UserSelfOrAdminMiddleware` di `backend/helper/middlewares.go` untuk memvalidasi hak akses role berbasis database PostgreSQL",
+      "Membatasi seluruh endpoint manipulasi Data Guru (`/guru/tambah`, `/guru/update`, `/guru/deleted`, `/guru/gurubyid`), Data Siswa (`/siswa/*`), Akun Pengguna (`/users/*`), dan Log Aktivitas (`/logs/*`) hanya untuk role `admin`",
+      "Memberikan izin akses kelola (CRUD) Data Kelas (`/kelas/*`) dan Mata Pelajaran (`/mapel/*`) kepada role `admin` dan `guru`",
+      "Mengizinkan role `guru` membaca daftar nama guru (`GET /guru`) secara terproteksi hanya untuk kebutuhan memilih wali kelas atau guru pengajar pada form kelas dan mapel",
+      "Memperbarui Pinia auth store `src/stores/auth.js` dengan getters peran dan hak akses (`isGuru`, `canManageKelas`, `canManageMapel`, `canManageGuru`, `canManageSiswa`, `canManageUsers`, `portalTitle`)",
+      "Memperketat navigation guard di `src/router/index.js` dengan meta `roles: ['admin']` pada route guru, siswa, users, dan logs, serta redirect otomatis ke dashboard jika role tidak sesuai",
+      "Menyesuaikan `SidebarAdmin.vue` agar role guru hanya melihat menu Dashboard, Data Kelas, Mata Pelajaran, dan Halaman Publik (menu Guru, Siswa, Pengguna, dan Log Aktivitas disembunyikan)",
+      "Menyesuaikan `Dashboard.vue` agar role guru hanya memuat dan menampilkan statistik serta aksi cepat Kelas dan Mapel tanpa memanggil API terlarang yang memicu 403",
+      "Menambahkan proteksi guard preventif pada `onMounted` di halaman `Guru.vue`, `Siswa.vue`, dan `Users.vue`",
+      "Menjalankan pengujian endpoint backend dengan token admin & token guru via curl dan pengujian unit (`go test ./...`), build backend Go, dan build frontend Vite (`npm run build`)"
+    ]
+  },
+  {
+    "order": 14,
+    "user_prompt": "kenapa tombol hapus tidak berfungsi saat di klik; Perbaiki agar waktunya realtime sesuai waktu wib; eksekusi dan tampilkan jam di dashboard",
+    "status": "Success",
+    "actions": [
+      "Mengganti dialog native browser `confirm()` pada `Guru.vue` dengan modal konfirmasi hapus kustom berbasis Vue/Bootstrap lengkap dengan konfirmasi nama guru, state loading `deleting`, penanganan error respon backend, dan atribut `type='button' @click.stop`",
+      "Memperbaiki konfigurasi database connection string di `backend/config/database.go` dari `timezone=Asia/Shanghai` menjadi `timezone=Asia/Jakarta`",
+      "Melakukan migrasi tipe kolom `transaction_logs.timestamp` di PostgreSQL dari `TIMESTAMP` biasa menjadi `TIMESTAMPTZ` dengan konversi zona waktu `Asia/Jakarta` dan default `CURRENT_TIMESTAMP`",
+      "Menstandarkan waktu di formatter frontend `Logs.vue` dengan opsi `timeZone: 'Asia/Jakarta'` (WIB) pada tanggal ramah, jam detik, dan tanggal lengkap, serta kalkulasi 'Hari ini'/'Kemarin' berbasis kalender WIB",
+      "Menambahkan fitur auto-refresh realtime (polling setiap 10 detik) yang dapat dinyalakan/dimatikan pada riwayat log sistem",
+      "Menambahkan widget jam digital realtime WIB di header Dashboard (`Dashboard.vue`) dengan format jam berdetik setiap detik (`HH:mm:ss WIB`), hari, tanggal, bulan, tahun, dan badge zona waktu",
+      "Verifikasi pengujian kompilasi backend Go (`go build`), pengujian unit (`go test ./...`), query PostgreSQL log berzona waktu +07:00, dan build frontend Vite (`npm run build`)"
+    ]
+  },
+  {
+    "order": 15,
+    "user_prompt": "pada icin kalender jika di ketik akan muncul kalender akademik,untuk sementara munculkan kalender sesuai di indonesia saja; oke eksekusi",
+    "status": "Success",
+    "actions": [
+      "Membuat dataset referensi hari libur nasional Indonesia di `frontend/src/data/holidaysIndonesia.js` mencakup hari libur masehi, keagamaan, dan nasional",
+      "Membuat komponen modal kalender Indonesia `frontend/src/components/IndonesiaCalendarModal.vue` dengan format hari Indonesia (Sen-Min), hari Minggu & hari libur ditandai merah, tanggal hari ini diberi highlight lingkaran biru, navigasi antar bulan/tahun, tombol kembali ke hari ini, dan daftar hari libur per bulan",
+      "Mengintegrasikan modal kalender pada header Dashboard `frontend/src/views/admin/Dashboard.vue` sehingga teks tanggal dan ikon kalender dapat diklik langsung oleh Admin maupun Guru",
+      "Memperbaiki penutupan tag modal pada `frontend/src/views/admin/Logs.vue`",
+      "Verifikasi build produksi frontend Vite (`npm run build`) dan pengujian unit backend Go (`go test ./...`)"
+    ]
+  }
+]

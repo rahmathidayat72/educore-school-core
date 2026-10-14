@@ -1,0 +1,23 @@
+meta {
+  name: Get User By ID
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/users/userbyid?id=your_user_id_here
+  body: none
+  auth: bearer
+}
+
+params:query {
+  id: your_user_id_here
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+assert {
+  res.status: eq 200
+}

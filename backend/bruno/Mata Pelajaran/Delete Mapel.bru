@@ -1,0 +1,23 @@
+meta {
+  name: Delete Mapel
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/mapel/deleted?id=your_mapel_id_here
+  body: none
+  auth: bearer
+}
+
+params:query {
+  id: your_mapel_id_here
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+assert {
+  res.status: eq 200
+}

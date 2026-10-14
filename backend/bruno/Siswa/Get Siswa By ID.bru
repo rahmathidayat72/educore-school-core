@@ -1,0 +1,23 @@
+meta {
+  name: Get Siswa By ID
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/siswa/siswabyid?id=your_siswa_id_here
+  body: none
+  auth: bearer
+}
+
+params:query {
+  id: your_siswa_id_here
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+assert {
+  res.status: eq 200
+}

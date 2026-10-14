@@ -1,0 +1,35 @@
+meta {
+  name: Update Guru
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/guru/update?id=your_guru_id_here
+  body: json
+  auth: bearer
+}
+
+params:query {
+  id: your_guru_id_here
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "nama": "Pak Budi Santoso, M.Pd",
+    "email": "budi.santoso@sekolah.id",
+    "alamat": "Jl. Pendidikan No. 12, Jakarta"
+  }
+}
+
+assert {
+  res.status: eq 200
+}

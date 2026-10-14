@@ -1,0 +1,23 @@
+meta {
+  name: Delete Kelas
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/kelas/deleted?id=your_kelas_id_here
+  body: none
+  auth: bearer
+}
+
+params:query {
+  id: your_kelas_id_here
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+assert {
+  res.status: eq 200
+}

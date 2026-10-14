@@ -1,0 +1,39 @@
+# OS and IDE files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+*.env
+
+# Logs and runtime artifacts
+*.log
+server.log
+
+# Go binaries and artifacts
+backend/go_rest_native_sekolah
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+coverage.out
+
+# Temporary and backup files
+*.backup
+*.bak
+*.tmp
+
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/.vite/

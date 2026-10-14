@@ -1,0 +1,14 @@
+#config
+.env
+.dev.env
+
+# Go binaries and coverage
+go_rest_native_sekolah
+*.exe
+*.test
+*.out
+coverage.out
+
+# Logs
+*.log
+server.log

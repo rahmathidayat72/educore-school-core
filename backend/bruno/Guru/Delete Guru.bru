@@ -1,0 +1,23 @@
+meta {
+  name: Delete Guru
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/guru/deleted?id=your_guru_id_here
+  body: none
+  auth: bearer
+}
+
+params:query {
+  id: your_guru_id_here
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+assert {
+  res.status: eq 200
+}

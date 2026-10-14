@@ -1,0 +1,36 @@
+meta {
+  name: Update User
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/users/update?id=your_user_id_here
+  body: json
+  auth: bearer
+}
+
+params:query {
+  id: your_user_id_here
+}
+
+headers {
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "username": "guru_andi_updated",
+    "email": "andi_updated@sekolah.id",
+    "password": "password123",
+    "role": "guru"
+  }
+}
+
+assert {
+  res.status: eq 200
+}
