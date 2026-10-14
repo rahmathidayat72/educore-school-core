@@ -347,7 +347,7 @@
                     <i class="fas fa-user-graduate text-primary"></i>
                     <div>
                       <div class="fw-bold text-dark small">{{ st.nama_siswa || st.nama }}</div>
-                      <div class="text-muted" style="font-size: 0.72rem;">Kelas: {{ st.kelas || '-' }}</div>
+                      <div class="text-muted" style="font-size: 0.72rem;">Kelas: {{ st.nama_kelas || st.kelas || '-' }}</div>
                     </div>
                   </div>
                   <button
