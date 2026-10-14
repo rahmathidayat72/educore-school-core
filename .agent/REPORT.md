@@ -80,3 +80,14 @@
 - **Bukti / Verifikasi:**
   - File migrasi 000002 UP dan DOWN terverifikasi ada via `glob`.
   - Kolom dibuat bersifat nullable terlebih dahulu agar kompatibel dengan data yang sudah ada sebelum proses backfill.
+
+### [2026-10-14] Task 02.3 — Penyiapan Unit Percontohan & Data Backfill
+- **Status:** `✅ Selesai dan terverifikasi`
+- **Tindakan:**
+  1. Menulis skrip migrasi UP `000003_seed_default_units_and_backfill.up.sql` yang mendaftarkan 4 unit sekolah yayasan (SMA, SMP, SMK, SD).
+  2. Melakukan backfill data yang sudah ada agar terhubung ke unit pilot utama (`unit-sma-001`).
+  3. Memasang Foreign Key constraint dari tabel operasional (`users`, `guru`, `kelas`, `siswa`, `mata_pelajaran`, `jadwal_pelajaran`, `transaction_logs`) ke `school_units(id)`.
+  4. Menulis skrip migrasi DOWN `000003_seed_default_units_and_backfill.down.sql` untuk pemulihan/rollback aman jika dibutuhkan.
+- **Bukti / Verifikasi:**
+  - File migrasi 000003 UP dan DOWN terverifikasi ada via `glob`.
+  - Sintaks FK constraint dan data seed divalidasi.

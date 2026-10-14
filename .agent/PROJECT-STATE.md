@@ -3,9 +3,9 @@
 ## 1. Status Metadata
 - **Project Name:** EduCore School — School Core Management
 - **Current Lifecycle State:** `IN_PROGRESS`
-- **Current Phase:** `Phase 02 — Multi-Unit Yayasan & Evolusi Skema Data`
-- **Current Active Task:** `task-02.3` (Penyiapan unit percontohan & data backfill)
-- **Last Completed Task:** `task-02.2` (Penambahan school_unit_id pada entitas operasional)
+- **Current Phase:** `Phase 03 — Identity, Role Super Admin, & Tenant Isolation`
+- **Current Active Task:** `task-03.1` (Pembaruan entitas users & JWT claims multi-unit)
+- **Last Completed Task:** `task-02.3` (Penyiapan unit percontohan & data backfill)
 - **Security Gate Status:** `APPROVED`
 - **Security Risk Tier:** `MEDIUM`
 - **Remediation Gate Status:** `NOT_REQUIRED`

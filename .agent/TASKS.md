@@ -16,12 +16,12 @@
 ### Phase 02: Multi-Unit Yayasan & Skema Database
 - [x] `task-02.1`: Buat skrip migrasi SQL tabel `school_units`. (Status: `✅ Selesai dan terverifikasi`)
 - [x] `task-02.2`: Tambahkan kolom `school_unit_id` pada seluruh entitas operasional. (Status: `✅ Selesai dan terverifikasi`)
-- [ ] `task-02.3`: Penyiapan data default unit percontohan & data backfill. (Status: `📋 Siap`)
+- [x] `task-02.3`: Penyiapan data default unit percontohan & data backfill. (Status: `✅ Selesai dan terverifikasi`)
 
-### Phase 03: Identity, Role, & Tenant Isolation
-- [ ] `task-03.1`: Perbarui entitas `users` dan JWT claims (`school_unit_id`, `role: super_admin`).
-- [ ] `task-03.2`: Implementasi isolasi data unit sekolah pada service & model (WHERE `school_unit_id`).
-- [ ] `task-03.3`: Implementasi endpoint CRUD Unit Sekolah khusus Super Admin.
+### Phase 03: Identity, Role Super Admin, & Tenant Isolation
+- [ ] `task-03.1`: Perbarui entitas `users` dan JWT claims (`school_unit_id`, `role: super_admin`). (Status: `📋 Siap`)
+- [ ] `task-03.2`: Implementasi isolasi data unit sekolah pada service & model (WHERE `school_unit_id`). (Status: `⬜ Belum siap`)
+- [ ] `task-03.3`: Implementasi endpoint CRUD Unit Sekolah khusus Super Admin. (Status: `⬜ Belum siap`)
 
 ### Phase 04: Penguatan Modul Inti (Siswa, Wali, Guru, Rombel)
 - [ ] `task-04.1`: Penyesuaian tabel rombel/kelas untuk jenjang SD (Fase A-C), SMP (Fase D), SMA (Fase E-F), dan SMK (Jurusan).
