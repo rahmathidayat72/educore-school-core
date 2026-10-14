@@ -156,3 +156,26 @@
   - `go test -v ./features/kelas/...` berstatus `PASS` (seluruh 7 skenario pengujian baru dan test eksisting lulus 100%).
   - `go test -v ./...` berstatus `PASS` (zero regression pada seluruh modul backend).
   - `go build ./...` sukses tanpa peringatan atau error kompilasi.
+
+### [2026-10-14] Task 04.2 — Pembuatan Tabel academic_years dan class_enrollments
+- **Status:** `✅ Selesai dan terverifikasi`
+- **Requirement:** OBJ-001, BUS-004, FR-004, FR-006, NFR-SEC-001
+- **Tindakan:**
+  1. Menulis skrip migrasi UP `000005_create_academic_years_and_enrollments.up.sql`:
+     - Tabel `academic_years`: `id`, `school_unit_id` (FK), `tahun_ajaran`, `semester`, `is_active`, `tanggal_mulai`, `tanggal_selesai`.
+     - Partial unique index `idx_academic_years_single_active` untuk menegakkan aturan tepat satu tahun ajaran aktif per unit sekolah (`WHERE is_active = true AND delete_at IS NULL`).
+     - Tabel `class_enrollments`: `id`, `school_unit_id` (FK), `academic_year_id` (FK), `kelas_id` (FK), `siswa_id` (FK), `status`, `keterangan`.
+     - Unique index `idx_class_enrollments_unique_student_year` untuk mencegah duplikasi pendaftaran siswa di tahun ajaran yang sama.
+     - Seed awal tahun ajaran pilot `unit-sma-001` ('2026/2027', 'Ganjil', active).
+     - Backfill otomatis riwayat siswa existing ke `class_enrollments`.
+  2. Menulis skrip migrasi DOWN `000005_create_academic_years_and_enrollments.down.sql` untuk rollback aman.
+  3. Mengimplementasikan domain entities, DTOs, dan interfaces di `backend/features/academic_years/entities.go`.
+  4. Mengimplementasikan data layer model database PostgreSQL di `backend/features/academic_years/model/query.go` dengan query parameterized dan isolasi multi-unit.
+  5. Mengimplementasikan business logic service layer di `backend/features/academic_years/service/logic.go` dengan validasi semester ('Ganjil'/'Genap'), validasi status pendaftaran ('Aktif', 'Lulus', 'Pindah', 'Tinggal Kelas'), proteksi penghapusan tahun ajaran yang sedang aktif, dan aktivasi atomik.
+  6. Menulis comprehensive unit tests di `backend/features/academic_years/service/logic_test.go` dan `backend/features/academic_years/controllers/controller_test.go`.
+  7. Mengimplementasikan presentation HTTP layer di `backend/features/academic_years/controllers/controller.go` dan formatter di `formatter.go`.
+  8. Mendaftarkan route HTTP `/academic-years`, `/academic-years/detail`, `/academic-years/active`, `/academic-years/tambah`, `/academic-years/update`, `/academic-years/set-active`, `/academic-years/deleted`, `/class-enrollments`, `/class-enrollments/detail`, `/class-enrollments/tambah`, `/class-enrollments/update`, `/class-enrollments/deleted`, dan `/class-enrollments/student-history` pada `backend/router/router.go`.
+- **Bukti / Verifikasi:**
+  - `go test -v ./features/academic_years/...` berstatus `PASS` (seluruh skenario pengujian unit service dan controller lulus 100%).
+  - `go test ./...` berstatus `PASS` (zero regression di seluruh 11 modul backend).
+  - `go build ./...` sukses tanpa error maupun peringatan kompilasi.

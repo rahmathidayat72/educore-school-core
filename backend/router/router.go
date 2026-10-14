@@ -36,6 +36,10 @@ import (
 	schoolunitsmodels "go_rest_native_sekolah/features/school_units/model"
 	serviceschoolunits "go_rest_native_sekolah/features/school_units/service"
 
+	academicyearscontroller "go_rest_native_sekolah/features/academic_years/controllers"
+	academicyearsmodels "go_rest_native_sekolah/features/academic_years/model"
+	serviceacademicyears "go_rest_native_sekolah/features/academic_years/service"
+
 	"go_rest_native_sekolah/helper"
 	"net/http"
 	"strconv"
@@ -69,6 +73,8 @@ func InitRouter(db *pgxpool.Pool) http.Handler {
 	jadwalRouter(mux, db)
 	// Endpoint /school-units digunakan untuk manajemen unit sekolah yayasan (Super Admin Yayasan)
 	schoolUnitsRouter(mux, db)
+	// Endpoint /academic-years dan /class-enrollments untuk pengelolaan tahun ajaran & riwayat kelas siswa
+	academicYearsRouter(mux, db)
 
 	// Bungkus mux dengan middleware logging dan cors
 	return helper.CORSMiddleware(helper.LoggingMiddleware(mux, db))
@@ -631,6 +637,147 @@ func schoolUnitsRouter(mux *http.ServeMux, db *pgxpool.Pool) {
 		if r.Method == http.MethodDelete || r.Method == http.MethodPut {
 			err := unitController.Delete(w, r)
 			if err != nil {
+				helper.JSONResponse(w, http.StatusInternalServerError, err.Error())
+			}
+		} else {
+			helper.JSONResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
+		}
+	})))
+}
+
+func academicYearsRouter(mux *http.ServeMux, db *pgxpool.Pool) {
+	ayRepo := academicyearsmodels.NewAcademicYearModel(db)
+	ayService := serviceacademicyears.NewAcademicYearService(ayRepo)
+	ayController := academicyearscontroller.NewAcademicYearController(ayService)
+
+	allowedAdminRoles := []string{"super_admin", "admin"}
+	allowedReadRoles := []string{"super_admin", "admin", "guru"}
+
+	// --- Academic Years Endpoints ---
+	mux.HandleFunc("/academic-years", helper.AuthMiddleware(helper.RolesAllowedMiddleware(db, allowedReadRoles, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			if err := ayController.GetAllYears(w, r); err != nil {
+				helper.JSONResponse(w, http.StatusInternalServerError, err.Error())
+			}
+		} else {
+			helper.JSONResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
+		}
+	})))
+
+	mux.HandleFunc("/academic-years/detail", helper.AuthMiddleware(helper.RolesAllowedMiddleware(db, allowedReadRoles, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			if err := ayController.GetYearByID(w, r); err != nil {
+				helper.JSONResponse(w, http.StatusInternalServerError, err.Error())
+			}
+		} else {
+			helper.JSONResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
+		}
+	})))
+
+	mux.HandleFunc("/academic-years/active", helper.AuthMiddleware(helper.RolesAllowedMiddleware(db, allowedReadRoles, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			if err := ayController.GetActiveYear(w, r); err != nil {
+				helper.JSONResponse(w, http.StatusInternalServerError, err.Error())
+			}
+		} else {
+			helper.JSONResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
+		}
+	})))
+
+	mux.HandleFunc("/academic-years/tambah", helper.AuthMiddleware(helper.RolesAllowedMiddleware(db, allowedAdminRoles, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			if err := ayController.CreateYear(w, r); err != nil {
+				helper.JSONResponse(w, http.StatusInternalServerError, err.Error())
+			}
+		} else {
+			helper.JSONResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
+		}
+	})))
+
+	mux.HandleFunc("/academic-years/update", helper.AuthMiddleware(helper.RolesAllowedMiddleware(db, allowedAdminRoles, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost || r.Method == http.MethodPut {
+			if err := ayController.UpdateYear(w, r); err != nil {
+				helper.JSONResponse(w, http.StatusInternalServerError, err.Error())
+			}
+		} else {
+			helper.JSONResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
+		}
+	})))
+
+	mux.HandleFunc("/academic-years/set-active", helper.AuthMiddleware(helper.RolesAllowedMiddleware(db, allowedAdminRoles, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost || r.Method == http.MethodPut {
+			if err := ayController.SetActiveYear(w, r); err != nil {
+				helper.JSONResponse(w, http.StatusInternalServerError, err.Error())
+			}
+		} else {
+			helper.JSONResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
+		}
+	})))
+
+	mux.HandleFunc("/academic-years/deleted", helper.AuthMiddleware(helper.RolesAllowedMiddleware(db, allowedAdminRoles, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost || r.Method == http.MethodDelete {
+			if err := ayController.DeleteYear(w, r); err != nil {
+				helper.JSONResponse(w, http.StatusInternalServerError, err.Error())
+			}
+		} else {
+			helper.JSONResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
+		}
+	})))
+
+	// --- Class Enrollments Endpoints ---
+	mux.HandleFunc("/class-enrollments", helper.AuthMiddleware(helper.RolesAllowedMiddleware(db, allowedReadRoles, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			if err := ayController.GetEnrollments(w, r); err != nil {
+				helper.JSONResponse(w, http.StatusInternalServerError, err.Error())
+			}
+		} else {
+			helper.JSONResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
+		}
+	})))
+
+	mux.HandleFunc("/class-enrollments/detail", helper.AuthMiddleware(helper.RolesAllowedMiddleware(db, allowedReadRoles, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			if err := ayController.GetEnrollmentByID(w, r); err != nil {
+				helper.JSONResponse(w, http.StatusInternalServerError, err.Error())
+			}
+		} else {
+			helper.JSONResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
+		}
+	})))
+
+	mux.HandleFunc("/class-enrollments/tambah", helper.AuthMiddleware(helper.RolesAllowedMiddleware(db, allowedAdminRoles, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			if err := ayController.EnrollStudent(w, r); err != nil {
+				helper.JSONResponse(w, http.StatusInternalServerError, err.Error())
+			}
+		} else {
+			helper.JSONResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
+		}
+	})))
+
+	mux.HandleFunc("/class-enrollments/update", helper.AuthMiddleware(helper.RolesAllowedMiddleware(db, allowedAdminRoles, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost || r.Method == http.MethodPut {
+			if err := ayController.UpdateEnrollment(w, r); err != nil {
+				helper.JSONResponse(w, http.StatusInternalServerError, err.Error())
+			}
+		} else {
+			helper.JSONResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
+		}
+	})))
+
+	mux.HandleFunc("/class-enrollments/deleted", helper.AuthMiddleware(helper.RolesAllowedMiddleware(db, allowedAdminRoles, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost || r.Method == http.MethodDelete {
+			if err := ayController.DeleteEnrollment(w, r); err != nil {
+				helper.JSONResponse(w, http.StatusInternalServerError, err.Error())
+			}
+		} else {
+			helper.JSONResponse(w, http.StatusMethodNotAllowed, "Method not allowed")
+		}
+	})))
+
+	mux.HandleFunc("/class-enrollments/student-history", helper.AuthMiddleware(helper.RolesAllowedMiddleware(db, allowedReadRoles, func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			if err := ayController.GetStudentEnrollmentHistory(w, r); err != nil {
 				helper.JSONResponse(w, http.StatusInternalServerError, err.Error())
 			}
 		} else {

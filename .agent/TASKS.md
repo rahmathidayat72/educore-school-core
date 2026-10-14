@@ -25,8 +25,8 @@
 
 ### Phase 04: Penguatan Modul Inti (Siswa, Wali, Guru, Rombel)
 - [x] `task-04.1`: Penyesuaian tabel rombel/kelas untuk jenjang SD (Fase A-C), SMP (Fase D), SMA (Fase E-F), dan SMK (Jurusan). (Status: `✅ Selesai dan terverifikasi`)
-- [ ] `task-04.2`: Pembuatan tabel `academic_years` dan `class_enrollments`. (Status: `📋 Siap`)
-- [ ] `task-04.3`: Pembuatan tabel relasi wali murid `guardians` dan `student_guardians`.
+- [x] `task-04.2`: Pembuatan tabel `academic_years` dan `class_enrollments`. (Status: `✅ Selesai dan terverifikasi`)
+- [ ] `task-04.3`: Pembuatan tabel relasi wali murid `guardians` dan `student_guardians`. (Status: `📋 Siap`)
 - [ ] `task-04.4`: Penyesuaian UI frontend untuk penautan wali murid dan rombel multi-jenjang.
 
 ### Phase 05: Penjadwalan Bebas Bentrok (Conflict-Free Schedule)
