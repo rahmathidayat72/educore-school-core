@@ -1,0 +1,29 @@
+meta {
+  name: Create Academic Year
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/academic-years
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "tahun": "2026/2027",
+    "semester": "Ganjil",
+    "tanggal_mulai": "2026-07-15",
+    "tanggal_selesai": "2026-12-20",
+    "is_active": true
+  }
+}
+
+assert {
+  res.status: eq 201
+}

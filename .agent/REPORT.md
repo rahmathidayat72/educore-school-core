@@ -290,3 +290,21 @@
 - **Bukti / Verifikasi:**
   - `npm run build` di `frontend/` berstatus `PASS` (Vite build sukses dalam 905ms).
   - `go test ./...` dan `go build ./...` berstatus `PASS` (Zero regression).
+
+### [2026-10-14] Task 07.1, 07.2, & 07.3 — Standarisasi REST API Alias, Bruno Collection, & Final Acceptance
+- **Status:** `✅ Selesai dan terverifikasi`
+- **Requirement:** OBJ-001, BUS-001, FR-001 s/d FR-005, NFR-SEC-001, NFR-PERF-001
+- **Tindakan:**
+  1. Menambahkan multiplexing method HTTP RESTful konvensional pada rute backend `backend/router/router.go`:
+     - `/school-units` (GET, POST, PUT, DELETE)
+     - `/academic-years` (GET, POST, PUT, DELETE)
+     - `/class-enrollments` (GET, POST, PUT, DELETE)
+     - `/guardians` (GET, POST, PUT, DELETE)
+     Semua tetap mempertahankan backward-compatibility penuh dengan endpoint lama (`/tambah`, `/update`, `/deleted`).
+  2. Melengkapi koleksi pengujian API Bruno di `backend/bruno/`:
+     - Menambahkan folder dan file request `.bru` untuk `School Units/`, `Academic Years/`, `Class Enrollments/`, dan `Guardians/`.
+  3. Menjalankan pengujian regresi menyeluruh pada backend dan frontend.
+- **Bukti / Verifikasi:**
+  - `go test ./...` berstatus `PASS` (Zero regression di seluruh 12 paket backend Go).
+  - `go build ./...` berstatus `PASS` (Binary backend terkompilasi bersih).
+  - `npm run build` di `frontend/` berstatus `PASS` (Vite client production build sukses dalam 943ms tanpa error).

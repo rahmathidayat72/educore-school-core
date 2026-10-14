@@ -1,0 +1,30 @@
+meta {
+  name: Create School Unit
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/school-units
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "nama": "SD IT Al-Hikmah",
+    "jenjang": "SD",
+    "kode": "SD-HIKMAH",
+    "alamat": "Jl. Pendidikan No. 12",
+    "telepon": "021-12345678",
+    "email": "sd@alhikmah.sch.id"
+  }
+}
+
+assert {
+  res.status: eq 201
+}

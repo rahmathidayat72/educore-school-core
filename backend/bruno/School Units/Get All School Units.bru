@@ -1,0 +1,19 @@
+meta {
+  name: Get All School Units
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/school-units
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+assert {
+  res.status: eq 200
+}

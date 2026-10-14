@@ -1,0 +1,32 @@
+meta {
+  name: Create Guardian
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/guardians
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "nama": "H. Ahmad Fauzi",
+    "nik": "3201010101800001",
+    "hubungan": "Ayah Kandung",
+    "pekerjaan": "Wiraswasta",
+    "pendidikan": "S1",
+    "telepon": "081234567890",
+    "email": "ahmad.fauzi@example.com",
+    "alamat": "Komplek Perumahan Indah Blok C No 5"
+  }
+}
+
+assert {
+  res.status: eq 201
+}

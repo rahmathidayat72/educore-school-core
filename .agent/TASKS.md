@@ -40,6 +40,6 @@
 - [x] `task-06.3`: Dashboard agregat Super Admin & dashboard operasional Admin Unit. (Status: `✅ Selesai dan terverifikasi`)
 
 ### Phase 07: Kontrak REST API & Final Acceptance
-- [ ] `task-07.1`: Standarisasi REST alias endpoint untuk modul satelit. (Status: `📋 Siap`)
-- [ ] `task-07.2`: Update koleksi Bruno testing (`backend/bruno/`).
-- [ ] `task-07.3`: Pengujian regresi penuh & final acceptance report.
+- [x] `task-07.1`: Standarisasi REST alias endpoint untuk modul satelit. (Status: `✅ Selesai dan terverifikasi`)
+- [x] `task-07.2`: Update koleksi Bruno testing (`backend/bruno/`). (Status: `✅ Selesai dan terverifikasi`)
+- [x] `task-07.3`: Pengujian regresi penuh & final acceptance report. (Status: `✅ Selesai dan terverifikasi`)

@@ -1,0 +1,28 @@
+meta {
+  name: Enroll Student To Class
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/class-enrollments
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "student_id": "019488a0-0000-7000-8000-000000000001",
+    "class_id": "019488b0-0000-7000-8000-000000000001",
+    "academic_year_id": "019488c0-0000-7000-8000-000000000001",
+    "status": "active"
+  }
+}
+
+assert {
+  res.status: eq 201
+}
