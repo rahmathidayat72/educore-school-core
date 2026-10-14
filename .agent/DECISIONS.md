@@ -33,3 +33,13 @@
 - **Konteks:** Penyusunan jadwal pelajaran di unit sekolah sering mengalami bentrok guru atau ruang kelas.
 - **Keputusan:** Memvalidasi ketersediaan guru dan ruangan secara otomatis di backend service layer saat penyimpanan jadwal baru atau perubahan jadwal. Jika ada irisan rentang waktu pada hari yang sama, request ditolak dengan pesan HTTP 400 Bad Request.
 - **Konsekuensi:** Mencegah jadwal bertabrakan secara sistemik sebelum data tersimpan ke database.
+
+---
+
+## Record 005: Strategi Version Control Git Monorepo
+- **Status:** APPROVED
+- **Tanggal:** 14 Oktober 2026
+- **Konteks:** Proyek School Core Management terdiri atas Go Backend, Vue 3 Frontend, dokumen spesifikasi, dan pelacakan state AI.
+- **Keputusan:** Menyatukan seluruh modul dalam satu repositori Git monorepo di `School-Core-Management/` pada branch `main`.
+- **Konsekuensi:** Memastikan commit atomik yang sinkron antara kontrak API backend, antarmuka frontend, dan dokumen arsitektur.
+

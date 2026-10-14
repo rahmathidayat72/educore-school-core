@@ -7,16 +7,16 @@
 | `task-01.1` | Setup struktur tata kelola dokumen di `docs/project/` dan `.agent/` | AI Agent | `✅ Selesai dan terverifikasi` | Ready | Done | OBJ-001, OBJ-002 |
 | `task-01.2` | Penyelarasan file `AGENTS.md` di root `School-Core-Management/` | AI Agent | `✅ Selesai dan terverifikasi` | Ready | Done | SOP-001 |
 | `task-01.3` | Pembersihan artefak lokal (`server.log`, binary) & update `.gitignore` | AI Agent | `✅ Selesai dan terverifikasi` | Ready | Done | SOP-001 |
-| `task-01.4` | Rekomendasi/setup kontrol versi Git terpadu | AI Agent | `📋 Siap` | Ready | Pending | SOP-001 |
+| `task-01.4` | Rekomendasi/setup kontrol versi Git terpadu | AI Agent | `✅ Selesai dan terverifikasi` | Ready | Done | SOP-001 |
 
 ---
 
 ## 2. Upcoming Roadmap Tasks
 
 ### Phase 02: Multi-Unit Yayasan & Skema Database
-- [ ] `task-02.1`: Buat skrip migrasi SQL tabel `school_units`.
-- [ ] `task-02.2`: Tambahkan kolom `school_unit_id` pada seluruh entitas operasional.
-- [ ] `task-02.3`: Penyiapan data default unit percontohan & data backfill.
+- [x] `task-02.1`: Buat skrip migrasi SQL tabel `school_units`. (Status: `✅ Selesai dan terverifikasi`)
+- [ ] `task-02.2`: Tambahkan kolom `school_unit_id` pada seluruh entitas operasional. (Status: `📋 Siap`)
+- [ ] `task-02.3`: Penyiapan data default unit percontohan & data backfill. (Status: `⬜ Belum siap`)
 
 ### Phase 03: Identity, Role, & Tenant Isolation
 - [ ] `task-03.1`: Perbarui entitas `users` dan JWT claims (`school_unit_id`, `role: super_admin`).

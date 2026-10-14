@@ -46,3 +46,28 @@
 - **Bukti / Verifikasi:**
   - `glob` untuk `server.log` dan `go_rest_native_sekolah` mengembalikan `No files found`.
   - `git status` pada backend memverifikasi file binary dan log tidak lagi terlacak.
+
+### [2026-10-14] Task 01.4 — Setup Kontrol Versi Git Monorepo Terpadu
+- **Status:** `✅ Selesai dan terverifikasi`
+- **Tindakan:**
+  1. Mengamankan git lama backend dengan memindahkan `backend/.git` ke `backend/.git.backup`.
+  2. Mengamankan git sub-repo `agent/.git` ke `agent/.git.backup`.
+  3. Menginisialisasi Git monorepo baru di root `School-Core-Management/` pada branch `main`.
+  4. Mengonfigurasi identitas author `Rahmat Hidayat` secara lokal di repository.
+  5. Melakukan initial baseline commit: `feat(core): initialize EduCore School Core Management monorepo` (175 files, 33,747 insertions).
+- **Bukti / Verifikasi:**
+  - `git log -1` memverifikasi commit hash `b2aeff5` berhasil tercatat dengan aman di branch `main`.
+  - Seluruh source code Go backend, Vue 3 frontend, docs/project, dan .agent tracking kini berada dalam satu riwayat sinkron.
+  - Remote repository GitHub baru dibuat: `https://github.com/rahmathidayat72/educore-school-core`
+  - Push branch `main` ke `origin/main` berhasil diverifikasi.
+
+### [2026-10-14] Task 02.1 — Pembuatan Skrip Migrasi SQL Tabel school_units
+- **Status:** `✅ Selesai dan terverifikasi`
+- **Tindakan:**
+  1. Membuat direktori `School-Core-Management/backend/migrations/`.
+  2. Menulis skrip migrasi UP `000001_create_school_units_table.up.sql` dengan skema kolom id (UUID/VARCHAR 36), nama_sekolah, jenjang (SD/SMP/SMA/SMK), npsn unik, kontak, alamat, status, dan soft delete.
+  3. Menambahkan partial unique index pada `npsn` (WHERE `delete_at IS NULL`) dan indeks performa pada `jenjang`, `status`, dan `delete_at`.
+  4. Menulis skrip migrasi DOWN `000001_create_school_units_table.down.sql` untuk rollback aman (`DROP TABLE IF EXISTS school_units CASCADE`).
+- **Bukti / Verifikasi:**
+  - File migrasi UP dan DOWN terverifikasi ada via `glob`.
+  - Sintaks DDL PostgreSQL telah divalidasi.

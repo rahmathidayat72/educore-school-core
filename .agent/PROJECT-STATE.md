@@ -3,9 +3,9 @@
 ## 1. Status Metadata
 - **Project Name:** EduCore School — School Core Management
 - **Current Lifecycle State:** `IN_PROGRESS`
-- **Current Phase:** `Phase 01 — Fondasi & Tata Kelola Proyek`
-- **Current Active Task:** `task-01.4` (Rekomendasi / Setup Git terpadu)
-- **Last Completed Task:** `task-01.3` (Pembersihan artefak lokal & .gitignore)
+- **Current Phase:** `Phase 02 — Multi-Unit Yayasan & Evolusi Skema Data`
+- **Current Active Task:** `task-02.2` (Penambahan school_unit_id pada entitas operasional)
+- **Last Completed Task:** `task-02.1` (Skrip Migrasi SQL tabel school_units)
 - **Security Gate Status:** `APPROVED`
 - **Security Risk Tier:** `MEDIUM`
 - **Remediation Gate Status:** `NOT_REQUIRED`
