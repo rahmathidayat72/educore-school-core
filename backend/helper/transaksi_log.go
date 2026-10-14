@@ -521,7 +521,96 @@ func DetermineActivityDetail(actorLabel, method, path string, query map[string][
 		return
 	}
 
-	// 9. Modul Dashboard
+	// 9. Modul Unit Sekolah (School Units)
+	if strings.HasPrefix(path, "/school-units") {
+		module = "Unit Sekolah"
+		switch path {
+		case "/school-units/tambah":
+			activityType = "CREATE"
+			description = fmt.Sprintf("%s menambahkan unit sekolah baru", actorLabel)
+		case "/school-units/update":
+			activityType = "UPDATE"
+			description = fmt.Sprintf("%s memperbarui profil unit sekolah", actorLabel)
+		case "/school-units/deleted":
+			activityType = "DELETE"
+			description = fmt.Sprintf("%s menghapus unit sekolah dari yayasan", actorLabel)
+		default:
+			activityType = "READ"
+			description = fmt.Sprintf("%s melihat data unit sekolah", actorLabel)
+		}
+		return
+	}
+
+	// 10. Modul Tahun Ajaran (Academic Years)
+	if strings.HasPrefix(path, "/academic-years") {
+		module = "Tahun Ajaran"
+		switch path {
+		case "/academic-years/tambah":
+			activityType = "CREATE"
+			description = fmt.Sprintf("%s membuat periode tahun ajaran baru", actorLabel)
+		case "/academic-years/update":
+			activityType = "UPDATE"
+			description = fmt.Sprintf("%s memperbarui periode tahun ajaran", actorLabel)
+		case "/academic-years/activate":
+			activityType = "UPDATE"
+			description = fmt.Sprintf("%s mengaktifkan tahun ajaran berjalan", actorLabel)
+		case "/academic-years/deleted":
+			activityType = "DELETE"
+			description = fmt.Sprintf("%s menghapus data tahun ajaran", actorLabel)
+		default:
+			activityType = "READ"
+			description = fmt.Sprintf("%s melihat daftar tahun ajaran", actorLabel)
+		}
+		return
+	}
+
+	// 11. Modul Penempatan Kelas (Class Enrollments)
+	if strings.HasPrefix(path, "/class-enrollments") {
+		module = "Riwayat Rombel Siswa"
+		switch path {
+		case "/class-enrollments/enroll":
+			activityType = "CREATE"
+			description = fmt.Sprintf("%s mendaftarkan penempatan siswa ke rombel", actorLabel)
+		case "/class-enrollments/update":
+			activityType = "UPDATE"
+			description = fmt.Sprintf("%s memperbarui status penempatan rombel siswa", actorLabel)
+		case "/class-enrollments/deleted":
+			activityType = "DELETE"
+			description = fmt.Sprintf("%s membatalkan penempatan rombel siswa", actorLabel)
+		default:
+			activityType = "READ"
+			description = fmt.Sprintf("%s melihat histori penempatan kelas siswa", actorLabel)
+		}
+		return
+	}
+
+	// 12. Modul Wali Murid (Guardians)
+	if strings.HasPrefix(path, "/guardians") {
+		module = "Wali Murid"
+		switch path {
+		case "/guardians/tambah":
+			activityType = "CREATE"
+			description = fmt.Sprintf("%s mendaftarkan profil wali murid baru", actorLabel)
+		case "/guardians/update":
+			activityType = "UPDATE"
+			description = fmt.Sprintf("%s memperbarui data wali murid", actorLabel)
+		case "/guardians/deleted":
+			activityType = "DELETE"
+			description = fmt.Sprintf("%s menghapus data wali murid", actorLabel)
+		case "/guardians/link-student":
+			activityType = "CREATE"
+			description = fmt.Sprintf("%s menautkan wali murid dengan anak/siswa", actorLabel)
+		case "/guardians/unlink-student":
+			activityType = "DELETE"
+			description = fmt.Sprintf("%s memutuskan tautan wali murid dari siswa", actorLabel)
+		default:
+			activityType = "READ"
+			description = fmt.Sprintf("%s melihat rincian informasi wali murid", actorLabel)
+		}
+		return
+	}
+
+	// 13. Modul Dashboard
 	if strings.HasPrefix(path, "/dashboard") {
 		module = "Dashboard"
 		activityType = "READ"
@@ -580,20 +669,23 @@ func maskHeaders(headers http.Header) string {
 	return string(bytes)
 }
 
-// maskSensitiveData menyembunyikan field password, access_token, refresh_token
+// maskSensitiveData menyembunyikan field password, access_token, refresh_token, secret, dsb (AGENTS.md Section 18.5)
 func maskSensitiveData(data string) string {
 	var bodyMap map[string]interface{}
 	if err := json.Unmarshal([]byte(data), &bodyMap); err != nil {
 		return data
 	}
 
-	sensitiveFields := []string{"password", "access_token", "refresh_token"}
+	sensitiveFields := []string{
+		"password", "kata_sandi", "old_password", "new_password",
+		"access_token", "refresh_token", "token", "secret", "private_key",
+		"authorization", "api_key",
+	}
+
 	for _, field := range sensitiveFields {
-		if val, ok := bodyMap[field].(string); ok {
-			if field == "password" {
-				bodyMap[field] = HashPassword(val)
-			} else {
-				bodyMap[field] = "***MASKED***"
+		for k := range bodyMap {
+			if strings.EqualFold(k, field) {
+				bodyMap[k] = "[REDACTED]"
 			}
 		}
 	}

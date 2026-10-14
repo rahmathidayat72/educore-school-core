@@ -2,6 +2,7 @@ package helper
 
 import (
 	"net/http"
+	"strings"
 	"testing"
 )
 
@@ -99,5 +100,46 @@ func TestShouldLogRequest(t *testing.T) {
 				t.Errorf("ShouldLogRequest(%s, %d) = %v; want %v", tc.method, tc.statusCode, got, tc.expected)
 			}
 		})
+	}
+}
+
+func TestMaskSensitiveData(t *testing.T) {
+	rawJSON := `{"email":"admin@sekolah.id","password":"SuperSecretPassword123","token":"jwt-token-val","nama":"Admin Sekolah"}`
+	sanitized := maskSensitiveData(rawJSON)
+
+	if strings.Contains(sanitized, "SuperSecretPassword123") {
+		t.Errorf("Sanitasi gagal: password masih bocor di string output: %s", sanitized)
+	}
+	if strings.Contains(sanitized, "jwt-token-val") {
+		t.Errorf("Sanitasi gagal: token masih bocor di string output: %s", sanitized)
+	}
+	if !strings.Contains(sanitized, "[REDACTED]") {
+		t.Errorf("Sanitasi gagal: label [REDACTED] tidak ditemukan: %s", sanitized)
+	}
+	if !strings.Contains(sanitized, "admin@sekolah.id") {
+		t.Errorf("Sanitasi keliru: email non-kritis terhapus: %s", sanitized)
+	}
+}
+
+func TestDetermineActivityDetail_NewModules(t *testing.T) {
+	// School Units
+	mod, act, _, desc := DetermineActivityDetail("Super Admin", "POST", "/school-units/tambah", nil, nil, 201)
+	if mod != "Unit Sekolah" || act != "CREATE" {
+		t.Errorf("DetermineActivityDetail school-units failed: mod=%s, act=%s", mod, act)
+	}
+	if !strings.Contains(desc, "menambahkan unit sekolah") {
+		t.Errorf("DetermineActivityDetail desc mismatch: %s", desc)
+	}
+
+	// Academic Years
+	mod, act, _, _ = DetermineActivityDetail("Admin", "POST", "/academic-years/activate", nil, nil, 200)
+	if mod != "Tahun Ajaran" || act != "UPDATE" {
+		t.Errorf("DetermineActivityDetail academic-years failed: mod=%s, act=%s", mod, act)
+	}
+
+	// Guardians
+	mod, act, _, _ = DetermineActivityDetail("Admin", "POST", "/guardians/link-student", nil, nil, 201)
+	if mod != "Wali Murid" || act != "CREATE" {
+		t.Errorf("DetermineActivityDetail guardians failed: mod=%s, act=%s", mod, act)
 	}
 }

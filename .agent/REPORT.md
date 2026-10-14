@@ -248,3 +248,20 @@
 - **Bukti / Verifikasi:**
   - `npm run build` di direktori `frontend/` berstatus `PASS` (Vite build sukses dalam 860ms tanpa error).
   - `go test ./...` dan `go build ./...` di direktori `backend/` tetap berstatus `PASS` (Zero regression).
+
+### [2026-10-14] Task 06.1 — Refactor Audit Logging Middleware Asinkron & Payload Sanitization
+- **Status:** `✅ Selesai dan terverifikasi`
+- **Requirement:** OBJ-001, NFR-SEC-001, NFR-PERF-001
+- **Tindakan:**
+  1. Memperketat fungsi sanitasi `maskSensitiveData` di `backend/helper/transaksi_log.go` sesuai `AGENTS.md` Bagian 18.5:
+     - Mendeteksi dan mereduksi field sensitif: `password`, `kata_sandi`, `old_password`, `new_password`, `access_token`, `refresh_token`, `token`, `secret`, `private_key`, `authorization`, `api_key` menjadi label aman `[REDACTED]`.
+  2. Memperluas identifikasi modul aktivitas di `DetermineActivityDetail` untuk mencakup modul satelit baru:
+     - Modul `Unit Sekolah` (`/school-units`)
+     - Modul `Tahun Ajaran` (`/academic-years`)
+     - Modul `Riwayat Rombel Siswa` (`/class-enrollments`)
+     - Modul `Wali Murid` (`/guardians`)
+  3. Menulis unit testing `TestMaskSensitiveData` dan `TestDetermineActivityDetail_NewModules` di `backend/helper/transaksi_log_test.go` untuk memvalidasi zero credential leak pada audit trail.
+- **Bukti / Verifikasi:**
+  - `go test -v ./helper/...` berstatus `PASS` (100% skenario pengujian sanitasi & audit log lulus).
+  - `go test ./...` berstatus `PASS` (zero regression di seluruh 12 paket backend).
+  - `go build ./...` sukses tanpa error maupun peringatan kompilasi.

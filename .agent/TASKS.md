@@ -35,8 +35,8 @@
 - [x] `task-05.3`: UI frontend kalender/tabel jadwal dengan peringatan bentrok waktu. (Status: `✅ Selesai dan terverifikasi`)
 
 ### Phase 06: Audit Trail, CORS Hardening, & Dashboard
-- [ ] `task-06.1`: Refactor audit logging middleware menjadi asinkron dengan payload sanitization. (Status: `📋 Siap`)
-- [ ] `task-06.2`: Pengetatan CORS configuration.
+- [x] `task-06.1`: Refactor audit logging middleware menjadi asinkron dengan payload sanitization. (Status: `✅ Selesai dan terverifikasi`)
+- [ ] `task-06.2`: Pengetatan CORS configuration. (Status: `📋 Siap`)
 - [ ] `task-06.3`: Dashboard agregat Super Admin & dashboard operasional Admin Unit.
 
 ### Phase 07: Kontrak REST API & Final Acceptance
