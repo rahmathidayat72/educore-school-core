@@ -15,8 +15,8 @@
 
 ### Phase 02: Multi-Unit Yayasan & Skema Database
 - [x] `task-02.1`: Buat skrip migrasi SQL tabel `school_units`. (Status: `✅ Selesai dan terverifikasi`)
-- [ ] `task-02.2`: Tambahkan kolom `school_unit_id` pada seluruh entitas operasional. (Status: `📋 Siap`)
-- [ ] `task-02.3`: Penyiapan data default unit percontohan & data backfill. (Status: `⬜ Belum siap`)
+- [x] `task-02.2`: Tambahkan kolom `school_unit_id` pada seluruh entitas operasional. (Status: `✅ Selesai dan terverifikasi`)
+- [ ] `task-02.3`: Penyiapan data default unit percontohan & data backfill. (Status: `📋 Siap`)
 
 ### Phase 03: Identity, Role, & Tenant Isolation
 - [ ] `task-03.1`: Perbarui entitas `users` dan JWT claims (`school_unit_id`, `role: super_admin`).

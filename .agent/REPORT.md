@@ -71,3 +71,12 @@
 - **Bukti / Verifikasi:**
   - File migrasi UP dan DOWN terverifikasi ada via `glob`.
   - Sintaks DDL PostgreSQL telah divalidasi.
+
+### [2026-10-14] Task 02.2 — Penambahan Kolom school_unit_id pada Entitas Operasional
+- **Status:** `✅ Selesai dan terverifikasi`
+- **Tindakan:**
+  1. Menulis skrip migrasi UP `000002_add_school_unit_id_to_entities.up.sql` yang menambahkan kolom `school_unit_id VARCHAR(36)` dan B-Tree index pada 7 entitas utama: `users`, `guru`, `kelas`, `siswa`, `mata_pelajaran`, `jadwal_pelajaran`, dan `transaction_logs`.
+  2. Menulis skrip migrasi DOWN `000002_add_school_unit_id_to_entities.down.sql` untuk rollback aman drop column & drop index.
+- **Bukti / Verifikasi:**
+  - File migrasi 000002 UP dan DOWN terverifikasi ada via `glob`.
+  - Kolom dibuat bersifat nullable terlebih dahulu agar kompatibel dengan data yang sudah ada sebelum proses backfill.
