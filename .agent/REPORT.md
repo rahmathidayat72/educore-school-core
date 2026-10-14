@@ -217,3 +217,21 @@
 - **Bukti / Verifikasi:**
   - `npm run build` di direktori `frontend/` berstatus `PASS` (Vite production build sukses tanpa error sintaks maupun bundling).
   - `go test ./...` dan `go build ./...` di direktori `backend/` tetap berstatus `PASS` (Zero regression).
+
+### [2026-10-14] Task 05.1 & 05.2 — Verifikasi Deteksi Bentrok Jadwal Guru & Ruangan Serta Unit Testing Komprehensif
+- **Status:** `✅ Selesai dan terverifikasi`
+- **Requirement:** OBJ-001, FR-009, NFR-REL-001
+- **Tindakan:**
+  1. Melakukan audit komprehensif pada query database `CheckConflict` (`backend/features/jadwal/model/query.go`):
+     - Memverifikasi pengecekan irisan jam mengajar guru pada hari dan semester/tahun ajaran aktif yang sama (`j2.jam_mulai < $7::time AND j2.jam_selesai > $6::time`).
+     - Memverifikasi pengecekan tabrakan jadwal rombel/kelas.
+     - Memverifikasi pengecekan okupansi ruangan sekolah agar tidak ada 2 kelas di ruangan yang sama pada jam bertabrakan.
+  2. Menulis unit test komprehensif di `backend/features/jadwal/service/logic_test.go`:
+     - Test validasi waktu (jam selesai harus lebih besar dari jam mulai).
+     - Test deteksi bentrok jadwal guru mengajar (`ConflictInfo.HasConflict = true`).
+     - Test deteksi bentrok okupansi ruangan sekolah.
+     - Test jadwal valid tanpa bentrok (`ConflictInfo.HasConflict = false`).
+- **Bukti / Verifikasi:**
+  - `go test -v ./features/jadwal/service/...` berstatus `PASS` (100% skenario uji anti-bentrok lulus).
+  - `go test ./...` berstatus `PASS` (zero regression di seluruh modul backend).
+  - `go build ./...` sukses tanpa error maupun peringatan kompilasi.
