@@ -32,10 +32,10 @@
 ### Phase 05: Penjadwalan Bebas Bentrok (Conflict-Free Schedule)
 - [x] `task-05.1`: Implementasi deteksi bentrok jadwal guru & ruangan di `features/jadwal/service`. (Status: `✅ Selesai dan terverifikasi`)
 - [x] `task-05.2`: Unit test komprehensif logika anti-bentrok. (Status: `✅ Selesai dan terverifikasi`)
-- [ ] `task-05.3`: UI frontend kalender/tabel jadwal dengan peringatan bentrok waktu. (Status: `📋 Siap`)
+- [x] `task-05.3`: UI frontend kalender/tabel jadwal dengan peringatan bentrok waktu. (Status: `✅ Selesai dan terverifikasi`)
 
 ### Phase 06: Audit Trail, CORS Hardening, & Dashboard
-- [ ] `task-06.1`: Refactor audit logging middleware menjadi asinkron dengan payload sanitization.
+- [ ] `task-06.1`: Refactor audit logging middleware menjadi asinkron dengan payload sanitization. (Status: `📋 Siap`)
 - [ ] `task-06.2`: Pengetatan CORS configuration.
 - [ ] `task-06.3`: Dashboard agregat Super Admin & dashboard operasional Admin Unit.
 

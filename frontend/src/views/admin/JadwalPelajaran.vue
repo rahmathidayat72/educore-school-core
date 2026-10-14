@@ -13,10 +13,32 @@
           {{ authStore.isAdmin ? 'Kelola jadwal KBM seluruh rombel, alokasi jam tatap muka/praktikum, dan pencegahan bentrok ruang & guru.' : 'Kelola dan pantau jadwal kegiatan mengajar Anda di setiap kelas.' }}
         </p>
       </div>
-      <button @click="openCreateModal" class="btn btn-primary text-white fw-semibold d-flex align-items-center gap-2 shadow-sm">
-        <i class="fas fa-plus"></i>
-        <span>Tambah Jadwal Baru</span>
-      </button>
+      <div class="d-flex align-items-center gap-2">
+        <!-- Switcher Mode Tampilan: Tabel vs Kalender Mingguan -->
+        <div class="btn-group shadow-sm me-2">
+          <button 
+            type="button" 
+            class="btn btn-sm" 
+            :class="viewMode === 'table' ? 'btn-primary text-white fw-bold' : 'btn-outline-primary'"
+            @click="viewMode = 'table'"
+          >
+            <i class="fas fa-list me-1"></i>Tabel Sesi
+          </button>
+          <button 
+            type="button" 
+            class="btn btn-sm" 
+            :class="viewMode === 'calendar' ? 'btn-primary text-white fw-bold' : 'btn-outline-primary'"
+            @click="viewMode = 'calendar'"
+          >
+            <i class="fas fa-calendar-alt me-1"></i>Matriks Mingguan
+          </button>
+        </div>
+
+        <button @click="openCreateModal" class="btn btn-primary text-white fw-semibold d-flex align-items-center gap-2 shadow-sm">
+          <i class="fas fa-plus"></i>
+          <span>Tambah Jadwal Baru</span>
+        </button>
+      </div>
     </div>
 
     <!-- Alert Notifikasi -->
@@ -96,8 +118,8 @@
       </div>
     </div>
 
-    <!-- Tabel Data Jadwal -->
-    <div class="card card-custom overflow-hidden border-0 shadow-sm">
+    <!-- Tabel Data Jadwal (View Mode: Table) -->
+    <div v-if="viewMode === 'table'" class="card card-custom overflow-hidden border-0 shadow-sm">
       <div class="table-responsive">
         <table class="table table-custom table-hover mb-0">
           <thead>
@@ -222,6 +244,58 @@
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- Tampilan Matriks Kalender Mingguan (View Mode: Calendar) -->
+    <div v-else class="card card-custom p-4 border-0 shadow-sm">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold text-dark mb-0">
+          <i class="fas fa-calendar-week text-primary me-2"></i>Matriks Jadwal Mingguan Bebas Bentrok
+        </h5>
+        <span class="badge bg-info-subtle text-info small">Visualisasi Slot Waktu KBM</span>
+      </div>
+
+      <div class="row g-3">
+        <div v-for="(dayName, dayIndex) in listHari.slice(0, 6)" :key="dayIndex" class="col-lg-4 col-md-6">
+          <div class="border rounded-3 p-3 bg-light h-100 shadow-xs">
+            <div class="d-flex justify-content-between align-items-center pb-2 border-bottom mb-2">
+              <span class="fw-bold text-primary">{{ dayName }}</span>
+              <span class="badge bg-primary text-white" style="font-size: 0.7rem;">
+                {{ getJadwalByDay(dayIndex + 1).length }} Sesi
+              </span>
+            </div>
+
+            <div v-if="getJadwalByDay(dayIndex + 1).length === 0" class="text-center py-4 text-muted small">
+              <i class="far fa-calendar-times d-block mb-1 text-secondary"></i>
+              Tidak ada sesi KBM
+            </div>
+            <div v-else class="d-flex flex-column gap-2">
+              <div 
+                v-for="j in getJadwalByDay(dayIndex + 1)" 
+                :key="j.id"
+                class="card card-sm border p-2 bg-white rounded-2 shadow-xs cursor-pointer hover-shadow"
+                @click="openDetailModal(j)"
+              >
+                <div class="d-flex justify-content-between align-items-start mb-1">
+                  <span class="fw-bold text-dark small">{{ j.nama_pelajaran }}</span>
+                  <span class="badge bg-light text-secondary border font-monospace" style="font-size: 0.65rem;">
+                    {{ j.jam_mulai }} - {{ j.jam_selesai }}
+                  </span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center text-muted" style="font-size: 0.75rem;">
+                  <span><i class="fas fa-school text-primary me-1"></i>{{ j.nama_kelas || '-' }}</span>
+                  <span><i class="fas fa-chalkboard-teacher text-success me-1"></i>{{ j.nama_guru || '-' }}</span>
+                </div>
+                <div class="mt-1 d-flex justify-content-between align-items-center" style="font-size: 0.7rem;">
+                  <span class="badge bg-info-subtle text-info py-0 px-1">{{ j.ruang || 'Umum' }}</span>
+                  <span v-if="j.aktif" class="text-success fw-semibold"><i class="fas fa-check-circle me-1"></i>Aktif</span>
+                  <span v-else class="text-secondary fst-italic">Nonaktif</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -584,6 +658,14 @@ const jadwals = ref([])
 const listMapel = ref([])
 const listKelas = ref([])
 const listGuru = ref([])
+
+const viewMode = ref('table') // 'table' | 'calendar'
+
+const getJadwalByDay = (dayInt) => {
+  return filteredJadwal.value
+    .filter((j) => parseInt(j.hari) === dayInt)
+    .sort((a, b) => (a.jam_mulai || '').localeCompare(b.jam_mulai || ''))
+}
 
 const loading = ref(false)
 const submitting = ref(false)

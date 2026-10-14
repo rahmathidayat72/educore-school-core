@@ -235,3 +235,16 @@
   - `go test -v ./features/jadwal/service/...` berstatus `PASS` (100% skenario uji anti-bentrok lulus).
   - `go test ./...` berstatus `PASS` (zero regression di seluruh modul backend).
   - `go build ./...` sukses tanpa error maupun peringatan kompilasi.
+
+### [2026-10-14] Task 05.3 — UI Frontend Kalender / Matriks Jadwal Mingguan Bebas Bentrok
+- **Status:** `✅ Selesai dan terverifikasi`
+- **Requirement:** OBJ-001, FR-009, NFR-UX-001
+- **Tindakan:**
+  1. Menambahkan switcher mode tampilan di `frontend/src/views/admin/JadwalPelajaran.vue`:
+     - Mode `Tabel Sesi`: Daftar linear lengkap dengan filter multi-kriteria dan aksi cepat.
+     - Mode `Matriks Mingguan`: Grid kalender 6 hari KBM (Senin - Sabtu) yang mengelompokkan sesi pembelajaran per hari secara kronologis.
+  2. Menyediakan fungsi filter kronologis `getJadwalByDay(dayInt)` untuk mengurutkan sesi belajar berdasarkan jam mulai.
+  3. Memastikan peringatan error konflik dari backend tertangkap dan ditampilkan dengan jelas di modal tambah/ubah jadwal.
+- **Bukti / Verifikasi:**
+  - `npm run build` di direktori `frontend/` berstatus `PASS` (Vite build sukses dalam 860ms tanpa error).
+  - `go test ./...` dan `go build ./...` di direktori `backend/` tetap berstatus `PASS` (Zero regression).
