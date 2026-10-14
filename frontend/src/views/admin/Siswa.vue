@@ -12,6 +12,10 @@
         <p class="text-secondary small mb-0">Kelola biodata komprehensif siswa, penempatan rombongan belajar (kelas), serta data wali murid.</p>
       </div>
       <div class="d-flex align-items-center gap-2">
+        <button @click="openImportModal" class="btn btn-outline-primary d-flex align-items-center gap-2 shadow-sm" title="Import data siswa secara masal dari Excel/CSV">
+          <i class="fas fa-file-import"></i>
+          <span>Import CSV</span>
+        </button>
         <button @click="exportDataSiswa" class="btn btn-outline-success d-flex align-items-center gap-2 shadow-sm" :disabled="loading || filteredSiswa.length === 0" title="Unduh data siswa ke file Excel/CSV">
           <i class="fas fa-file-excel"></i>
           <span>Ekspor Excel</span>
@@ -627,6 +631,17 @@
         </div>
       </Transition>
     </Teleport>
+    <!-- Modal Import Data Masal Siswa -->
+    <ImportModal
+      :is-open="showImportModal"
+      title="Siswa / Peserta Didik"
+      template-filename="Template_Import_Siswa"
+      :schema="siswaImportSchema"
+      :sample-rows="siswaSampleRows"
+      :on-import-row="handleImportSiswaRow"
+      @close="showImportModal = false"
+      @success="onImportSuccess"
+    />
   </div>
 </template>
 
@@ -638,6 +653,7 @@ import { siswaApi } from '@/api/siswaApi'
 import { kelasApi } from '@/api/kelasApi'
 import { guardiansApi } from '@/api/guardiansApi'
 import { exportToCSV } from '@/utils/exportHelper'
+import ImportModal from '@/components/ImportModal.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -811,6 +827,107 @@ const exportDataSiswa = () => {
     { label: 'Alamat', key: 'alamat' }
   ]
   exportToCSV('Data_Siswa_Sekolah', headers, filteredSiswa.value)
+}
+
+const showImportModal = ref(false)
+
+const siswaImportSchema = [
+  { key: 'nama', label: 'Nama Lengkap', example: 'Ahmad Fauzi' },
+  { key: 'nis', label: 'NIS', example: '2026001' },
+  { key: 'nisn', label: 'NISN', example: '0081234567' },
+  { key: 'kelas', label: 'Nama Kelas', example: 'X RPL 1' },
+  { key: 'jenis_kelamin', label: 'Jenis Kelamin', example: 'Laki-laki' },
+  { key: 'tempat_lahir', label: 'Tempat Lahir', example: 'Jakarta' },
+  { key: 'tanggal_lahir', label: 'Tanggal Lahir', example: '2010-05-14' },
+  { key: 'agama', label: 'Agama', example: 'Islam' },
+  { key: 'status', label: 'Status', example: 'Aktif' },
+  { key: 'nama_wali', label: 'Nama Wali', example: 'Bambang Sudiro' },
+  { key: 'no_telepon_wali', label: 'No Telepon Wali', example: '081234567890' },
+  { key: 'email', label: 'Email', example: 'ahmad.fauzi@siswa.id' },
+  { key: 'alamat', label: 'Alamat', example: 'Jl. Merdeka No. 45' }
+]
+
+const siswaSampleRows = [
+  {
+    nama: 'Ahmad Fauzi',
+    nis: '2026001',
+    nisn: '0081234567',
+    kelas: 'X RPL 1',
+    jenis_kelamin: 'Laki-laki',
+    tempat_lahir: 'Jakarta',
+    tanggal_lahir: '2010-05-14',
+    agama: 'Islam',
+    status: 'Aktif',
+    nama_wali: 'Bambang Sudiro',
+    no_telepon_wali: '081234567890',
+    email: 'ahmad.fauzi@siswa.id',
+    alamat: 'Jl. Merdeka No. 45'
+  },
+  {
+    nama: 'Siti Rahmawati',
+    nis: '2026002',
+    nisn: '0087654321',
+    kelas: 'X RPL 1',
+    jenis_kelamin: 'Perempuan',
+    tempat_lahir: 'Bandung',
+    tanggal_lahir: '2010-09-21',
+    agama: 'Islam',
+    status: 'Aktif',
+    nama_wali: 'Hendra Gunawan',
+    no_telepon_wali: '081398765432',
+    email: 'siti.rahma@siswa.id',
+    alamat: 'Jl. Kenanga No. 12'
+  }
+]
+
+const openImportModal = () => {
+  showImportModal.value = true
+}
+
+const handleImportSiswaRow = async (row) => {
+  // Resolusi ID Kelas berdasarkan nama/kode kelas yang diinput di CSV
+  let matchedKelasId = ''
+  if (row.kelas || row.nama_kelas) {
+    const targetName = (row.kelas || row.nama_kelas).toLowerCase().trim()
+    const found = availableKelas.value.find(k => 
+      k.kelas?.toLowerCase().trim() === targetName ||
+      k.kode_kelas?.toLowerCase().trim() === targetName
+    )
+    if (found) matchedKelasId = found.id
+  }
+
+  // Jika tidak ditemukan, default ke kelas pertama yang tersedia
+  if (!matchedKelasId && availableKelas.value.length > 0) {
+    matchedKelasId = availableKelas.value[0].id
+  }
+
+  const payload = {
+    nama: row.nama || row.nama_lengkap || '',
+    nis: String(row.nis || ''),
+    nisn: String(row.nisn || ''),
+    kelas_id: matchedKelasId,
+    jenis_kelamin: row.jenis_kelamin || 'Laki-laki',
+    tempat_lahir: row.tempat_lahir || '',
+    tanggal_lahir: row.tanggal_lahir ? `${row.tanggal_lahir}T00:00:00Z` : '',
+    agama: row.agama || 'Islam',
+    status: row.status || 'Aktif',
+    nama_wali: row.nama_wali || '',
+    no_telepon_wali: String(row.no_telepon_wali || ''),
+    email: row.email || '',
+    alamat: row.alamat || '',
+    tahun_masuk: new Date().getFullYear().toString()
+  }
+
+  if (!payload.nama || !payload.nis) {
+    throw new Error('Kolom Nama dan NIS wajib diisi.')
+  }
+
+  return await siswaApi.create(payload)
+}
+
+const onImportSuccess = ({ total, success, failed }) => {
+  fetchSiswa()
+  showAlert(`Berhasil mengimpor ${success} dari total ${total} data siswa. ${failed > 0 ? `(${failed} gagal)` : ''}`)
 }
 
 const openCreateModal = () => {

@@ -12,6 +12,10 @@
         <p class="text-secondary small mb-0">Kelola informasi biodata lengkap guru, status kepegawaian, dan akun akses pendidik.</p>
       </div>
       <div class="d-flex align-items-center gap-2">
+        <button @click="openImportModal" class="btn btn-outline-info d-flex align-items-center gap-2 shadow-sm" title="Import data guru secara masal dari Excel/CSV">
+          <i class="fas fa-file-import"></i>
+          <span>Import CSV</span>
+        </button>
         <button @click="exportDataGuru" class="btn btn-outline-primary d-flex align-items-center gap-2 shadow-sm" :disabled="loading || filteredGuru.length === 0" title="Unduh data guru ke file Excel/CSV">
           <i class="fas fa-file-excel"></i>
           <span>Ekspor Excel</span>
@@ -443,6 +447,17 @@
         </div>
       </Transition>
     </Teleport>
+    <!-- Modal Import Data Masal Guru -->
+    <ImportModal
+      :is-open="showImportModal"
+      title="Tenaga Pendidik (Guru)"
+      template-filename="Template_Import_Guru"
+      :schema="guruImportSchema"
+      :sample-rows="guruSampleRows"
+      :on-import-row="handleImportGuruRow"
+      @close="showImportModal = false"
+      @success="onImportSuccess"
+    />
   </div>
 </template>
 
@@ -453,6 +468,7 @@ import { useAuthStore } from '@/stores/auth'
 import { guruApi } from '@/api/guruApi'
 import { userApi } from '@/api/userApi'
 import { exportToCSV } from '@/utils/exportHelper'
+import ImportModal from '@/components/ImportModal.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -598,6 +614,87 @@ const exportDataGuru = () => {
     { label: 'Alamat', key: 'alamat' }
   ]
   exportToCSV('Data_Guru_Pendidik', headers, filteredGuru.value)
+}
+
+const showImportModal = ref(false)
+
+const guruImportSchema = [
+  { key: 'nama', label: 'Nama Lengkap', example: 'Dra. Hj. Siti Aminah, M.Pd' },
+  { key: 'nip', label: 'NIP', example: '197508122000032001' },
+  { key: 'nuptk', label: 'NUPTK', example: '8456753655300023' },
+  { key: 'status_kepegawaian', label: 'Status Pegawai', example: 'PNS' },
+  { key: 'pendidikan_terakhir', label: 'Pendidikan Terakhir', example: 'S2' },
+  { key: 'jenis_kelamin', label: 'Jenis Kelamin', example: 'Perempuan' },
+  { key: 'tempat_lahir', label: 'Tempat Lahir', example: 'Bandung' },
+  { key: 'tanggal_lahir', label: 'Tanggal Lahir', example: '1975-08-12' },
+  { key: 'agama', label: 'Agama', example: 'Islam' },
+  { key: 'email', label: 'Email Resmi', example: 'siti.aminah@sekolah.id' },
+  { key: 'no_telepon', label: 'No Telepon', example: '081298765432' },
+  { key: 'alamat', label: 'Alamat', example: 'Jl. Diponegoro No. 88' }
+]
+
+const guruSampleRows = [
+  {
+    nama: 'Dra. Hj. Siti Aminah, M.Pd',
+    nip: '197508122000032001',
+    nuptk: '8456753655300023',
+    status_kepegawaian: 'PNS',
+    pendidikan_terakhir: 'S2',
+    jenis_kelamin: 'Perempuan',
+    tempat_lahir: 'Bandung',
+    tanggal_lahir: '1975-08-12',
+    agama: 'Islam',
+    email: 'siti.aminah@sekolah.id',
+    no_telepon: '081298765432',
+    alamat: 'Jl. Diponegoro No. 88'
+  },
+  {
+    nama: 'Budi Hartono, S.Kom',
+    nip: '198803152014021003',
+    nuptk: '3456762663200012',
+    status_kepegawaian: 'PPPK',
+    pendidikan_terakhir: 'S1',
+    jenis_kelamin: 'Laki-laki',
+    tempat_lahir: 'Surabaya',
+    tanggal_lahir: '1988-03-15',
+    agama: 'Islam',
+    email: 'budi.hartono@sekolah.id',
+    no_telepon: '081345678901',
+    alamat: 'Jl. Pahlawan No. 17'
+  }
+]
+
+const openImportModal = () => {
+  showImportModal.value = true
+}
+
+const handleImportGuruRow = async (row) => {
+  const payload = {
+    id_user: availableUsers.value[0]?.id || '',
+    nama: row.nama || row.nama_lengkap || '',
+    nip: String(row.nip || ''),
+    nuptk: String(row.nuptk || ''),
+    status_kepegawaian: row.status_kepegawaian || 'Guru Tetap Yayasan',
+    pendidikan_terakhir: row.pendidikan_terakhir || 'S1',
+    jenis_kelamin: row.jenis_kelamin || 'Laki-laki',
+    tempat_lahir: row.tempat_lahir || '',
+    tanggal_lahir: row.tanggal_lahir ? `${row.tanggal_lahir}T00:00:00Z` : '',
+    agama: row.agama || 'Islam',
+    email: row.email || row.email_resmi || '',
+    no_telepon: String(row.no_telepon || ''),
+    alamat: row.alamat || ''
+  }
+
+  if (!payload.nama || !payload.email) {
+    throw new Error('Kolom Nama Lengkap dan Email Resmi wajib diisi.')
+  }
+
+  return await guruApi.create(payload)
+}
+
+const onImportSuccess = ({ total, success, failed }) => {
+  fetchGuru()
+  showAlert(`Berhasil mengimpor ${success} dari total ${total} data guru. ${failed > 0 ? `(${failed} gagal)` : ''}`)
 }
 
 const openCreateModal = () => {

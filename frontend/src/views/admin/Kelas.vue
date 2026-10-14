@@ -12,6 +12,10 @@
         <p class="text-secondary small mb-0">Kelola daftar rombongan belajar, wali kelas, ruang belajar, dan kapasitas penempatan siswa.</p>
       </div>
       <div class="d-flex align-items-center gap-2">
+        <button @click="openImportModal" class="btn btn-outline-primary d-flex align-items-center gap-2 shadow-sm" title="Import data rombel kelas secara masal dari Excel/CSV">
+          <i class="fas fa-file-import"></i>
+          <span>Import CSV</span>
+        </button>
         <button @click="exportDataKelas" class="btn btn-outline-info d-flex align-items-center gap-2 shadow-sm" :disabled="loading || filteredKelas.length === 0" title="Unduh rekapitulasi kapasitas rombel ke Excel/CSV">
           <i class="fas fa-file-excel"></i>
           <span>Ekspor Rekap</span>
@@ -504,6 +508,17 @@
         </div>
       </Transition>
     </Teleport>
+    <!-- Modal Import Data Masal Rombel Kelas -->
+    <ImportModal
+      :is-open="showImportModal"
+      title="Rombongan Belajar (Kelas)"
+      template-filename="Template_Import_Kelas"
+      :schema="kelasImportSchema"
+      :sample-rows="kelasSampleRows"
+      :on-import-row="handleImportKelasRow"
+      @close="showImportModal = false"
+      @success="onImportSuccess"
+    />
   </div>
 </template>
 
@@ -512,6 +527,7 @@ import { ref, computed, onMounted } from 'vue'
 import { kelasApi } from '@/api/kelasApi'
 import { guruApi } from '@/api/guruApi'
 import { exportToCSV } from '@/utils/exportHelper'
+import ImportModal from '@/components/ImportModal.vue'
 
 const classes = ref([])
 const availableGurus = ref([])
@@ -625,6 +641,94 @@ const exportDataKelas = () => {
     { label: 'Status Rombel', key: 'status', formatter: (k) => k.status || 'Aktif' }
   ]
   exportToCSV('Rekapitulasi_Kapasitas_Rombel', headers, filteredKelas.value)
+}
+
+const showImportModal = ref(false)
+
+const kelasImportSchema = [
+  { key: 'kelas', label: 'Nama Rombel', example: 'X RPL 1' },
+  { key: 'kode_kelas', label: 'Kode Kelas', example: '10-RPL-1' },
+  { key: 'tingkat', label: 'Tingkat', example: '10' },
+  { key: 'fase', label: 'Fase', example: 'Fase E' },
+  { key: 'jurusan', label: 'Jurusan', example: 'Rekayasa Perangkat Lunak' },
+  { key: 'ruangan', label: 'Ruang Belajar', example: 'Lab Komputer 1' },
+  { key: 'kapasitas', label: 'Kapasitas', example: '36' },
+  { key: 'status', label: 'Status', example: 'Aktif' },
+  { key: 'wali_kelas', label: 'Wali Kelas', example: 'Budi Hartono' },
+  { key: 'deskripsi', label: 'Keterangan', example: 'Rombel peminatan software engineering' }
+]
+
+const kelasSampleRows = [
+  {
+    kelas: 'X RPL 1',
+    kode_kelas: '10-RPL-1',
+    tingkat: '10',
+    fase: 'Fase E',
+    jurusan: 'Rekayasa Perangkat Lunak',
+    ruangan: 'Lab Komputer 1',
+    kapasitas: '36',
+    status: 'Aktif',
+    wali_kelas: 'Budi Hartono',
+    deskripsi: 'Rombel peminatan software engineering'
+  },
+  {
+    kelas: 'X AKL 1',
+    kode_kelas: '10-AKL-1',
+    tingkat: '10',
+    fase: 'Fase E',
+    jurusan: 'Akuntansi dan Keuangan Lembaga',
+    ruangan: 'Ruang 201',
+    kapasitas: '36',
+    status: 'Aktif',
+    wali_kelas: 'Siti Aminah',
+    deskripsi: 'Rombel akuntansi'
+  }
+]
+
+const openImportModal = () => {
+  showImportModal.value = true
+}
+
+const handleImportKelasRow = async (row) => {
+  // Resolusi ID Wali Kelas berdasarkan nama guru jika diinput
+  let matchedGuruId = ''
+  if (row.wali_kelas || row.nama_guru) {
+    const targetName = (row.wali_kelas || row.nama_guru).toLowerCase().trim()
+    const found = availableGurus.value.find(g => 
+      g.nama?.toLowerCase().trim().includes(targetName) ||
+      g.nip?.toLowerCase().trim() === targetName
+    )
+    if (found) matchedGuruId = found.id
+  }
+
+  if (!matchedGuruId && availableGurus.value.length > 0) {
+    matchedGuruId = availableGurus.value[0].id
+  }
+
+  const payload = {
+    kelas: row.kelas || row.nama_rombel || '',
+    kode_kelas: row.kode_kelas || '',
+    tingkat: String(row.tingkat || '10'),
+    fase: row.fase || 'Fase E',
+    jurusan: row.jurusan || 'Umum',
+    tahun_ajaran: '2026/2027',
+    ruangan: row.ruangan || 'Ruang Kelas',
+    kapasitas: parseInt(row.kapasitas) || 36,
+    status: row.status || 'Aktif',
+    deskripsi: row.deskripsi || row.keterangan || '',
+    id_guru: matchedGuruId
+  }
+
+  if (!payload.kelas) {
+    throw new Error('Kolom Nama Rombel (kelas) wajib diisi.')
+  }
+
+  return await kelasApi.create(payload)
+}
+
+const onImportSuccess = ({ total, success, failed }) => {
+  fetchKelas()
+  showAlert(`Berhasil mengimpor ${success} dari total ${total} rombel kelas. ${failed > 0 ? `(${failed} gagal)` : ''}`)
 }
 
 const openCreateModal = () => {

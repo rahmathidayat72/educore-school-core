@@ -5,7 +5,7 @@
 - **Current Lifecycle State:** `COMPLETED`
 - **Current Phase:** `Phase 09 — Academic Reporting, Export & Print System`
 - **Current Active Task:** `None` (Seluruh Phase 01 s/d Phase 09 selesai)
-- **Last Completed Task:** `task-09.4` (Rekapitulasi kapasitas rombel & penempatan siswa Enrollment Summary)
+- **Last Completed Task:** `task-09.5` (Template Import CSV/Excel terstandar & dialog import masal Siswa, Guru, dan Kelas)
 - **Security Gate Status:** `APPROVED`
 - **Security Risk Tier:** `MEDIUM`
 - **Remediation Gate Status:** `NOT_REQUIRED`

@@ -339,3 +339,24 @@
   - `npm run build` di `frontend/` berstatus `PASS` (Vite production build sukses dalam 1.05s tanpa error kompilasi).
   - `go test ./...` di `backend/` berstatus `PASS` (Zero regression di seluruh unit test backend Go).
   - `go build ./...` di `backend/` berstatus `PASS` (Kompilasi backend bersih).
+
+### [2026-10-14] Task 09.5 — Sistem Template Import CSV Baku & Dialog Import Masal Interaktif
+- **Status:** `✅ Selesai dan terverifikasi`
+- **Requirement:** BUS-001, FR-001, FR-003, NFR-UX-001, NFR-PERF-001
+- **Tindakan:**
+  1. Memperluas utilitas `frontend/src/utils/exportHelper.js` dengan fungsi:
+     - `downloadCSVTemplate(filename, schema, sampleRows)`: Menghasilkan berkas CSV baku dengan UTF-8 Byte Order Mark (`\uFEFF`) dan baris sampel dummy siap pakai.
+     - `parseCSV(csvText)`: Parser RFC 4180 yang menangani koma, tanda petik ganda ganda, newline, serta auto-trimming BOM.
+  2. Membuat komponen dialog reusable `frontend/src/components/ImportModal.vue`:
+     - Tombol **"Unduh Template CSV"** terintegrasi.
+     - Area drag-and-drop file CSV interaktif dengan feedback visual.
+     - Pratinjau 5 baris pertama data yang berhasil dibaca.
+     - Progress bar pemrosesan baris data secara asinkron.
+     - Log pelaporan detail jika ada baris data yang gagal/tidak lengkap.
+  3. Mengintegrasikan tombol **"Import CSV"** pada tiga modul master:
+     - `frontend/src/views/admin/Siswa.vue`: Template `Template_Import_Siswa.csv` lengkap dengan resolusi nama kelas ke `kelas_id`.
+     - `frontend/src/views/admin/Guru.vue`: Template `Template_Import_Guru.csv` lengkap dengan data kepegawaian & kualifikasi.
+     - `frontend/src/views/admin/Kelas.vue`: Template `Template_Import_Kelas.csv` lengkap dengan resolusi nama wali kelas ke `id_guru`.
+- **Bukti / Verifikasi:**
+  - `npm run build` di `frontend/` berstatus `PASS` (Vite production build sukses dalam 1.07s).
+  - `go test ./...` dan `go build ./...` di `backend/` berstatus `PASS` (Zero regression).

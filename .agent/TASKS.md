@@ -55,3 +55,4 @@
 - [x] `task-09.2`: Modul cetak & layout print jadwal pelajaran matriks mingguan per kelas. (Status: `✅ Selesai dan terverifikasi`)
 - [x] `task-09.3`: Lembar cetak jadwal mengajar personal masing-masing guru pendidik. (Status: `✅ Selesai dan terverifikasi`)
 - [x] `task-09.4`: Rekapitulasi kapasitas rombel & penempatan siswa (Enrollment Summary). (Status: `✅ Selesai dan terverifikasi`)
+- [x] `task-09.5`: Generator template import CSV/Excel terstandar & dialog import masal (`ImportModal.vue`) untuk Siswa, Guru, dan Kelas. (Status: `✅ Selesai dan terverifikasi`)
