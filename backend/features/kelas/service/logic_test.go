@@ -263,3 +263,86 @@ func TestDeleteKelas(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 }
+
+// Test Kurikulum Merdeka Multi-Jenjang Validation & Auto-assignment
+func TestResolveFaseDanJurusan(t *testing.T) {
+	t.Run("success auto-assign fase SD", func(t *testing.T) {
+		k := &kelas.KelasCore{
+			Kelas:   "Kelas 1A",
+			Tingkat: "1",
+		}
+		err := ResolveFaseDanJurusan(k)
+		assert.NoError(t, err)
+		assert.Equal(t, "A", k.Fase)
+	})
+
+	t.Run("success auto-assign fase SMP", func(t *testing.T) {
+		k := &kelas.KelasCore{
+			Kelas:   "Kelas 7B",
+			Tingkat: "7",
+		}
+		err := ResolveFaseDanJurusan(k)
+		assert.NoError(t, err)
+		assert.Equal(t, "D", k.Fase)
+	})
+
+	t.Run("success auto-assign fase SMA", func(t *testing.T) {
+		k := &kelas.KelasCore{
+			Kelas:   "Kelas 10-1",
+			Tingkat: "10",
+		}
+		err := ResolveFaseDanJurusan(k)
+		assert.NoError(t, err)
+		assert.Equal(t, "E", k.Fase)
+	})
+
+	t.Run("failed invalid fase conflict", func(t *testing.T) {
+		k := &kelas.KelasCore{
+			Kelas:   "Kelas 1A",
+			Tingkat: "1",
+			Fase:    "F",
+		}
+		err := ResolveFaseDanJurusan(k)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "tidak sesuai dengan tingkat")
+	})
+
+	t.Run("failed SMK without jurusan", func(t *testing.T) {
+		smkUnitID := "unit-smk-001"
+		k := &kelas.KelasCore{
+			SchoolUnitID: &smkUnitID,
+			Kelas:        "Kelas X TKJ",
+			Tingkat:      "10",
+			Jurusan:      "",
+		}
+		err := ResolveFaseDanJurusan(k)
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "wajib mencantumkan jurusan")
+	})
+
+	t.Run("success SMK with jurusan", func(t *testing.T) {
+		smkUnitID := "unit-smk-001"
+		k := &kelas.KelasCore{
+			SchoolUnitID: &smkUnitID,
+			Kelas:        "Kelas X TKJ 1",
+			Tingkat:      "10",
+			Jurusan:      "Teknik Komputer dan Jaringan",
+		}
+		err := ResolveFaseDanJurusan(k)
+		assert.NoError(t, err)
+		assert.Equal(t, "E", k.Fase)
+		assert.Equal(t, "Teknik Komputer dan Jaringan", k.Jurusan)
+	})
+
+	t.Run("success clear jurusan on SD/SMP", func(t *testing.T) {
+		k := &kelas.KelasCore{
+			Kelas:   "Kelas 5A",
+			Tingkat: "5",
+			Jurusan: "IPA",
+		}
+		err := ResolveFaseDanJurusan(k)
+		assert.NoError(t, err)
+		assert.Equal(t, "C", k.Fase)
+		assert.Empty(t, k.Jurusan)
+	})
+}

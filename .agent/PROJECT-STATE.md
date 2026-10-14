@@ -4,8 +4,8 @@
 - **Project Name:** EduCore School — School Core Management
 - **Current Lifecycle State:** `IN_PROGRESS`
 - **Current Phase:** `Phase 04 — Penguatan Modul Inti (Siswa, Wali, Guru, Rombel)`
-- **Current Active Task:** `task-04.1` (Penyesuaian tabel rombel/kelas untuk multi-jenjang SD-SMK)
-- **Last Completed Task:** `task-03.3` (Endpoint CRUD Unit Sekolah khusus Super Admin)
+- **Current Active Task:** `task-04.2` (Pembuatan tabel `academic_years` dan `class_enrollments`)
+- **Last Completed Task:** `task-04.1` (Penyesuaian tabel rombel/kelas untuk multi-jenjang SD-SMK)
 - **Security Gate Status:** `APPROVED`
 - **Security Risk Tier:** `MEDIUM`
 - **Remediation Gate Status:** `NOT_REQUIRED`

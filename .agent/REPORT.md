@@ -137,3 +137,22 @@
   - `go test -v ./features/school_units/...` berstatus `PASS` (100% lulus seluruh skenario pengujian: get all, get by id, validation error, duplicate NPSN, update, dan delete).
   - `go test -v ./...` berstatus `PASS` (100% lulus seluruh paket backend tanpa regresi).
   - `go build ./...` sukses tanpa error maupun peringatan kompilasi.
+
+### [2026-10-14] Task 04.1 — Penyesuaian Tabel Rombel/Kelas untuk Multi-Jenjang (SD-SMK)
+- **Status:** `✅ Selesai dan terverifikasi`
+- **Requirement:** OBJ-001, BUS-003, FR-005, NFR-SEC-001
+- **Tindakan:**
+  1. Menulis skrip migrasi UP `000004_enhance_kelas_multi_jenjang.up.sql` untuk menambahkan indeks performa pada kolom `tingkat`, `fase`, `jurusan`, dan `(school_unit_id, tingkat)`.
+  2. Menulis skrip migrasi DOWN `000004_enhance_kelas_multi_jenjang.down.sql` untuk rollback aman.
+  3. Mengimplementasikan fungsi inferensi dan validasi Kurikulum Merdeka `ResolveFaseDanJurusan` di `features/kelas/service/logic.go`:
+     - Normalisasi tingkat (Romawi/Arab ke angka standar 1–13).
+     - Auto-assignment fase jika kosong: Tingkat 1–2 $\rightarrow$ A, 3–4 $\rightarrow$ B, 5–6 $\rightarrow$ C, 7–9 $\rightarrow$ D, 10 $\rightarrow$ E, 11–13 $\rightarrow$ F.
+     - Validasi konsistensi jika fase diinput manual (menolak jika bertentangan dengan tingkat).
+     - Validasi ketat SMK: wajib menyertakan atribut jurusan / program keahlian.
+     - Sanitasi SD & SMP: otomatis mengosongkan atribut jurusan.
+  4. Menambahkan dukungan filter query parameter `?tingkat=`, `?fase=`, dan `?jurusan=` pada controller handler `Kelas` di `features/kelas/controllers/controller.go`.
+  5. Menulis unit testing `TestResolveFaseDanJurusan` di `features/kelas/service/logic_test.go` yang menguji skenario auto-assign SD/SMP/SMA, penolakan konflik fase, validasi jurusan SMK, dan sanitasi jenjang dasar.
+- **Bukti / Verifikasi:**
+  - `go test -v ./features/kelas/...` berstatus `PASS` (seluruh 7 skenario pengujian baru dan test eksisting lulus 100%).
+  - `go test -v ./...` berstatus `PASS` (zero regression pada seluruh modul backend).
+  - `go build ./...` sukses tanpa peringatan atau error kompilasi.

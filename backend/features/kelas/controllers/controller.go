@@ -110,15 +110,39 @@ func (kc *KelasController) Insert(w http.ResponseWriter, r *http.Request) error 
 // Fungsi ini akan mengembalikan error jika terjadi kesalahan.
 func (kc *KelasController) Kelas(w http.ResponseWriter, r *http.Request) error {
 	_, _, unitID, _ := helper.ExtractUserContext(r)
-	kelas, err := kc.KelasService.SelectAll(unitID)
+
+	// Baca filter opsional dari query parameters
+	tingkatFilter := r.URL.Query().Get("tingkat")
+	faseFilter := r.URL.Query().Get("fase")
+	jurusanFilter := r.URL.Query().Get("jurusan")
+
+	kelasList, err := kc.KelasService.SelectAll(unitID)
 	if err != nil {
 		// Jika terjadi error maka akan mengembalikan error dengan pesan "Error retrieving data".
 		return fmt.Errorf("kelas controller: Error retrieving data: %v", err)
 	}
 
+	// Filter in-memory jika query params diberikan
+	if tingkatFilter != "" || faseFilter != "" || jurusanFilter != "" {
+		filtered := make([]kelas.KelasCore, 0, len(kelasList))
+		for _, k := range kelasList {
+			if tingkatFilter != "" && !strings.EqualFold(strings.TrimSpace(k.Tingkat), strings.TrimSpace(tingkatFilter)) {
+				continue
+			}
+			if faseFilter != "" && !strings.EqualFold(strings.TrimSpace(k.Fase), strings.TrimSpace(faseFilter)) {
+				continue
+			}
+			if jurusanFilter != "" && !strings.EqualFold(strings.TrimSpace(k.Jurusan), strings.TrimSpace(jurusanFilter)) {
+				continue
+			}
+			filtered = append(filtered, k)
+		}
+		kelasList = filtered
+	}
+
 	// Membuat slice KelasFormatter dan mengisi dengan data kelas yang diambil dari database.
 	// KelasFormatter digunakan untuk memformat data kelas agar sesuai dengan kebutuhan response API.
-	formatedKelas := FormatKelasList(kelas)
+	formatedKelas := FormatKelasList(kelasList)
 
 	// Membuat response API berupa JSON dengan status OK dan pesan "Success".
 	// KelasFormatter yang diambil dari database akan di-encode menjadi JSON dan dikirim sebagai response.
