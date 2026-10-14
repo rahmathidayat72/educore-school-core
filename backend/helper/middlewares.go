@@ -309,12 +309,46 @@ func ExtractUserContext(r *http.Request) (id string, role string, unitID string,
 	return meta.ID, currentRole, currentUnit, superAdmin
 }
 
-// CORSMiddleware menangani Cross-Origin Resource Sharing (CORS)
+// CORSMiddleware menangani Cross-Origin Resource Sharing (CORS) dengan pengetatan origin (CORS Hardening)
 func CORSMiddleware(next http.Handler) http.Handler {
+	allowedOriginsEnv := os.Getenv("CORS_ALLOWED_ORIGINS")
+	var allowedOrigins []string
+	if strings.TrimSpace(allowedOriginsEnv) != "" {
+		for _, o := range strings.Split(allowedOriginsEnv, ",") {
+			if trimmed := strings.TrimSpace(o); trimmed != "" {
+				allowedOrigins = append(allowedOrigins, trimmed)
+			}
+		}
+	}
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
+		origin := r.Header.Get("Origin")
+		allowOrigin := "*"
+
+		// Jika ada konfigurasi spesifik CORS_ALLOWED_ORIGINS, validasi origin yang datang
+		if len(allowedOrigins) > 0 {
+			matched := false
+			for _, allowed := range allowedOrigins {
+				if allowed == "*" || strings.EqualFold(origin, allowed) {
+					allowOrigin = origin
+					matched = true
+					break
+				}
+			}
+			if !matched && origin != "" {
+				// Origin tidak ada di daftar izinkan
+				allowOrigin = allowedOrigins[0]
+			}
+		} else if origin != "" {
+			// Default development: echo request origin jika aman
+			allowOrigin = origin
+		}
+
+		w.Header().Set("Access-Control-Allow-Origin", allowOrigin)
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, X-School-Unit-ID")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		w.Header().Set("Access-Control-Max-Age", "86400")
 
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusOK)

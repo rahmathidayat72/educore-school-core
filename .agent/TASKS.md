@@ -36,10 +36,10 @@
 
 ### Phase 06: Audit Trail, CORS Hardening, & Dashboard
 - [x] `task-06.1`: Refactor audit logging middleware menjadi asinkron dengan payload sanitization. (Status: `✅ Selesai dan terverifikasi`)
-- [ ] `task-06.2`: Pengetatan CORS configuration. (Status: `📋 Siap`)
-- [ ] `task-06.3`: Dashboard agregat Super Admin & dashboard operasional Admin Unit.
+- [x] `task-06.2`: Pengetatan CORS configuration. (Status: `✅ Selesai dan terverifikasi`)
+- [x] `task-06.3`: Dashboard agregat Super Admin & dashboard operasional Admin Unit. (Status: `✅ Selesai dan terverifikasi`)
 
 ### Phase 07: Kontrak REST API & Final Acceptance
-- [ ] `task-07.1`: Standarisasi REST alias endpoint untuk modul satelit.
+- [ ] `task-07.1`: Standarisasi REST alias endpoint untuk modul satelit. (Status: `📋 Siap`)
 - [ ] `task-07.2`: Update koleksi Bruno testing (`backend/bruno/`).
 - [ ] `task-07.3`: Pengujian regresi penuh & final acceptance report.

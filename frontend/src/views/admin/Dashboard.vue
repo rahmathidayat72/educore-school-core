@@ -548,6 +548,60 @@
         </div>
       </div>
 
+      <!-- Row: Kartu Ringkasan Master Data Satelit Yayasan (Unit, Wali Murid, Periode) -->
+      <div v-if="authStore.isAdmin" class="row g-3 mb-4">
+        <div class="col-md-4">
+          <div class="card card-custom p-3 bg-white border shadow-sm h-100">
+            <div class="d-flex align-items-center justify-content-between">
+              <div>
+                <span class="text-secondary small text-uppercase fw-semibold">Unit Sekolah Yayasan</span>
+                <div class="fs-4 fw-bold text-dark mt-1">
+                  <AnimatedNumber :value="totals.total_unit || 0" /> Unit
+                </div>
+                <div class="text-muted small mt-1">Jenjang multi-unit terintegrasi</div>
+              </div>
+              <div class="p-3 bg-primary-subtle text-primary rounded-3">
+                <i class="fas fa-city fs-4"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="card card-custom p-3 bg-white border shadow-sm h-100">
+            <div class="d-flex align-items-center justify-content-between">
+              <div>
+                <span class="text-secondary small text-uppercase fw-semibold">Wali Murid Terhubung</span>
+                <div class="fs-4 fw-bold text-dark mt-1">
+                  <AnimatedNumber :value="totals.total_wali || 0" /> Orang
+                </div>
+                <div class="text-muted small mt-1">Relasi orang tua / pendamping siswa</div>
+              </div>
+              <div class="p-3 bg-success-subtle text-success rounded-3">
+                <i class="fas fa-user-friends fs-4"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="card card-custom p-3 bg-white border shadow-sm h-100">
+            <div class="d-flex align-items-center justify-content-between">
+              <div>
+                <span class="text-secondary small text-uppercase fw-semibold">Tahun Ajaran Aktif</span>
+                <div class="fs-4 fw-bold text-dark mt-1">
+                  <AnimatedNumber :value="totals.total_tahun_aktif || 0" /> Periode
+                </div>
+                <div class="text-muted small mt-1">Kalender KBM aktif berjalan</div>
+              </div>
+              <div class="p-3 bg-info-subtle text-info rounded-3">
+                <i class="fas fa-calendar-check fs-4"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Section: Data Perlu Perhatian Admin -->
       <div class="mb-4" v-if="attentionItems.length > 0">
         <div class="card card-custom border-warning border-opacity-50 p-3 p-md-4 bg-warning-subtle bg-opacity-10 shadow-sm">

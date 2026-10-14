@@ -265,3 +265,28 @@
   - `go test -v ./helper/...` berstatus `PASS` (100% skenario pengujian sanitasi & audit log lulus).
   - `go test ./...` berstatus `PASS` (zero regression di seluruh 12 paket backend).
   - `go build ./...` sukses tanpa error maupun peringatan kompilasi.
+
+### [2026-10-14] Task 06.2 — Pengetatan Konfigurasi CORS (CORS Hardening)
+- **Status:** `✅ Selesai dan terverifikasi`
+- **Requirement:** NFR-SEC-001, OBJ-001
+- **Tindakan:**
+  1. Memperbarui `CORSMiddleware` di `backend/helper/middlewares.go` untuk membaca `CORS_ALLOWED_ORIGINS` dari environment variable.
+  2. Menggantikan wildcard liar dengan validasi origin dinamis yang aman, mendukung `Access-Control-Allow-Credentials: true`, header `X-School-Unit-ID`, dan max age preflight cache 24 jam.
+  3. Menulis unit test `TestCORSMiddleware` di `backend/helper/transaksi_log_test.go` untuk memverifikasi handling preflight request OPTIONS dan origin matching.
+- **Bukti / Verifikasi:**
+  - `go test -v ./helper/...` berstatus `PASS` (Termasuk `TestCORSMiddleware`).
+  - `go test ./...` dan `go build ./...` berstatus `PASS` (Zero regression).
+
+### [2026-10-14] Task 06.3 — Dashboard Agregat Yayasan & Operasional Admin Unit
+- **Status:** `✅ Selesai dan terverifikasi`
+- **Requirement:** BUS-001, FR-001, FR-004
+- **Tindakan:**
+  1. Menambahkan atribut akumulasi master yayasan pada entitas backend `DashboardTotals`:
+     - `total_unit`: Total unit sekolah aktif yayasan.
+     - `total_wali`: Total wali murid terdaftar dalam sistem.
+     - `total_tahun_aktif`: Total periode tahun ajaran aktif berjalan.
+  2. Memperbarui query akumulasi di `backend/features/dashboard/model/query.go` untuk menghitung ketiga metrik di atas secara efisien.
+  3. Memperbarui antarmuka `frontend/src/views/admin/Dashboard.vue` dengan menambahkan kartu ringkasan visual untuk Unit Sekolah Yayasan, Wali Murid Terhubung, dan Tahun Ajaran Aktif.
+- **Bukti / Verifikasi:**
+  - `npm run build` di `frontend/` berstatus `PASS` (Vite build sukses dalam 905ms).
+  - `go test ./...` dan `go build ./...` berstatus `PASS` (Zero regression).

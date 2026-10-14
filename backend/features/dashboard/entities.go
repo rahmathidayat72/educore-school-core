@@ -5,11 +5,14 @@ import "time"
 type (
 	// DashboardTotals menyimpan angka akumulasi total data sistem
 	DashboardTotals struct {
-		TotalSiswa int `json:"total_siswa"`
-		TotalGuru  int `json:"total_guru"`
-		TotalKelas int `json:"total_kelas"`
-		TotalMapel int `json:"total_mapel"`
-		TotalUsers int `json:"total_users"`
+		TotalSiswa      int `json:"total_siswa"`
+		TotalGuru       int `json:"total_guru"`
+		TotalKelas      int `json:"total_kelas"`
+		TotalMapel      int `json:"total_mapel"`
+		TotalUsers      int `json:"total_users"`
+		TotalUnit       int `json:"total_unit,omitempty"`
+		TotalWali       int `json:"total_wali,omitempty"`
+		TotalTahunAktif int `json:"total_tahun_aktif,omitempty"`
 	}
 
 	// DashboardCompleteness menyimpan indikator kualitas & kelengkapan data

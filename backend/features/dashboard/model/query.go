@@ -36,7 +36,12 @@ func (dm *DashboardModel) GetSummary(role string, userID string) (*dashboard.Das
 	_ = dm.db.QueryRow(ctx, "SELECT COUNT(*) FROM kelas WHERE delete_at IS NULL").Scan(&summary.Totals.TotalKelas)
 	_ = dm.db.QueryRow(ctx, "SELECT COUNT(*) FROM mata_pelajaran WHERE delete_at IS NULL").Scan(&summary.Totals.TotalMapel)
 
-	if role == "admin" {
+	// Hitung data master pendukung (Unit Sekolah, Wali Murid, Tahun Ajaran Aktif)
+	_ = dm.db.QueryRow(ctx, "SELECT COUNT(*) FROM school_units WHERE delete_at IS NULL").Scan(&summary.Totals.TotalUnit)
+	_ = dm.db.QueryRow(ctx, "SELECT COUNT(*) FROM guardians WHERE delete_at IS NULL").Scan(&summary.Totals.TotalWali)
+	_ = dm.db.QueryRow(ctx, "SELECT COUNT(*) FROM academic_years WHERE delete_at IS NULL AND is_active = true").Scan(&summary.Totals.TotalTahunAktif)
+
+	if role == "admin" || role == "super_admin" {
 		_ = dm.db.QueryRow(ctx, "SELECT COUNT(*) FROM users WHERE delete_at IS NULL").Scan(&summary.Totals.TotalUsers)
 	}
 

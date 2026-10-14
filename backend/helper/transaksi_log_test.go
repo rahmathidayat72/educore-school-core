@@ -2,6 +2,7 @@ package helper
 
 import (
 	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 )
@@ -141,5 +142,34 @@ func TestDetermineActivityDetail_NewModules(t *testing.T) {
 	mod, act, _, _ = DetermineActivityDetail("Admin", "POST", "/guardians/link-student", nil, nil, 201)
 	if mod != "Wali Murid" || act != "CREATE" {
 		t.Errorf("DetermineActivityDetail guardians failed: mod=%s, act=%s", mod, act)
+	}
+}
+
+func TestCORSMiddleware(t *testing.T) {
+	nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("ok"))
+	})
+
+	handler := CORSMiddleware(nextHandler)
+
+	req, _ := http.NewRequest(http.MethodOptions, "/test", nil)
+	req.Header.Set("Origin", "http://localhost:5173")
+	rec := httptest.NewRecorder()
+
+	handler.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Errorf("Expected 200 for OPTIONS, got %d", rec.Code)
+	}
+
+	allowOrigin := rec.Header().Get("Access-Control-Allow-Origin")
+	if allowOrigin != "http://localhost:5173" {
+		t.Errorf("Expected Allow-Origin to reflect request origin, got %s", allowOrigin)
+	}
+
+	allowCreds := rec.Header().Get("Access-Control-Allow-Credentials")
+	if allowCreds != "true" {
+		t.Errorf("Expected Allow-Credentials true, got %s", allowCreds)
 	}
 }
