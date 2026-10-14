@@ -10,6 +10,7 @@ import (
 type Guru struct {
 	ID                 string
 	ID_User            string
+	SchoolUnitID       sql.NullString
 	Nama               string
 	NIP                sql.NullString
 	NUPTK              sql.NullString
@@ -37,9 +38,16 @@ func FormatterResponse(res Guru) guru.GuruCore {
 		tglLahirStr = res.TanggalLahir.Time.Format("2006-01-02")
 	}
 
+	var schoolUnitID *string
+	if res.SchoolUnitID.Valid && res.SchoolUnitID.String != "" {
+		s := res.SchoolUnitID.String
+		schoolUnitID = &s
+	}
+
 	return guru.GuruCore{
 		ID:                 res.ID,
 		ID_User:            res.ID_User,
+		SchoolUnitID:       schoolUnitID,
 		Nama:               res.Nama,
 		NIP:                res.NIP.String,
 		NUPTK:              res.NUPTK.String,

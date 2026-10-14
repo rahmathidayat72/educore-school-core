@@ -63,6 +63,11 @@ func (sc *SiswaController) InsertSiswa(w http.ResponseWriter, r *http.Request) e
 
 	siswaCore := FormatSiswaRequestToCore(siswaReq)
 
+	_, _, unitID, _ := helper.ExtractUserContext(r)
+	if siswaCore.SchoolUnitID == nil && unitID != "" {
+		siswaCore.SchoolUnitID = &unitID
+	}
+
 	err := sc.SiswaService.InsertSiswa(&siswaCore)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -81,7 +86,8 @@ func (sc *SiswaController) Siswa(w http.ResponseWriter, r *http.Request) error {
 		return errors.New("Nil controller")
 	}
 
-	siswaList, err := sc.SiswaService.SelectAllSiswa()
+	_, _, unitID, _ := helper.ExtractUserContext(r)
+	siswaList, err := sc.SiswaService.SelectAllSiswa(unitID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return err
@@ -100,7 +106,8 @@ func (sc *SiswaController) GetSiswaById(w http.ResponseWriter, r *http.Request) 
 		return errors.New("missing 'id' query parameter")
 	}
 
-	siswaData, err := sc.SiswaService.SelectById(id)
+	_, _, unitID, _ := helper.ExtractUserContext(r)
+	siswaData, err := sc.SiswaService.SelectById(id, unitID)
 	if err != nil {
 		http.Error(w, "Data siswa tidak ditemukan", http.StatusNotFound)
 		return err
@@ -156,7 +163,8 @@ func (sc *SiswaController) UpdateSiswa(w http.ResponseWriter, r *http.Request) e
 	}
 
 	siswaUpdate := FormatSiswaRequestToCore(siswaReq)
-	err := sc.SiswaService.Update(&siswaUpdate, id)
+	_, _, unitID, _ := helper.ExtractUserContext(r)
+	err := sc.SiswaService.Update(&siswaUpdate, id, unitID)
 	if err != nil {
 		if strings.Contains(err.Error(), "validation") || strings.Contains(err.Error(), "sudah terdaftar") || strings.Contains(err.Error(), "format") {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -166,7 +174,7 @@ func (sc *SiswaController) UpdateSiswa(w http.ResponseWriter, r *http.Request) e
 		return err
 	}
 
-	siswaData, err := sc.SiswaService.SelectById(id)
+	siswaData, err := sc.SiswaService.SelectById(id, unitID)
 	if err != nil {
 		http.Error(w, "Gagal mengambil data setelah update", http.StatusInternalServerError)
 		return err
@@ -185,7 +193,8 @@ func (sc *SiswaController) DeleteSiswa(w http.ResponseWriter, r *http.Request) e
 		return errors.New("missing 'id' query parameter")
 	}
 
-	err := sc.SiswaService.DeleteById(id)
+	_, _, unitID, _ := helper.ExtractUserContext(r)
+	err := sc.SiswaService.DeleteById(id, unitID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return err

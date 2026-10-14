@@ -83,26 +83,26 @@ func (s *siswaService) InsertSiswa(insert *siswa.SiswaCore) error {
 	return s.siswaData.InsertSiswa(insert)
 }
 
-func (s *siswaService) SelectAllSiswa() ([]siswa.SiswaCore, error) {
+func (s *siswaService) SelectAllSiswa(schoolUnitID ...string) ([]siswa.SiswaCore, error) {
 	if s.siswaData == nil {
 		return nil, errors.New("SiswaService: Nil repository")
 	}
-	siswas, err := s.siswaData.SelectAllSiswa()
+	siswas, err := s.siswaData.SelectAllSiswa(schoolUnitID...)
 	if err != nil {
 		return nil, errors.New("SiswaService: gagal mengambil data")
 	}
 	return siswas, nil
 }
 
-func (s *siswaService) SelectById(id string) (*siswa.SiswaCore, error) {
-	siswa, err := s.siswaData.SelectById(id)
+func (s *siswaService) SelectById(id string, schoolUnitID ...string) (*siswa.SiswaCore, error) {
+	siswa, err := s.siswaData.SelectById(id, schoolUnitID...)
 	if err != nil {
 		return nil, errors.New("SiswaService: gagal mengambil data")
 	}
 	return siswa, nil
 }
 
-func (s *siswaService) Update(insert *siswa.SiswaCore, id string) error {
+func (s *siswaService) Update(insert *siswa.SiswaCore, id string, schoolUnitID ...string) error {
 	if s == nil || s.siswaData == nil {
 		return errors.New("Nil repository")
 	}
@@ -110,7 +110,7 @@ func (s *siswaService) Update(insert *siswa.SiswaCore, id string) error {
 		return errors.New("Validation error: id is nil")
 	}
 
-	existingData, err := s.siswaData.SelectById(id)
+	existingData, err := s.siswaData.SelectById(id, schoolUnitID...)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return errors.New("siswa service: Data tidak ditemukan")
@@ -138,20 +138,20 @@ func (s *siswaService) Update(insert *siswa.SiswaCore, id string) error {
 		return err
 	}
 
-	if err := s.siswaData.Update(insert, id); err != nil {
+	if err := s.siswaData.Update(insert, id, schoolUnitID...); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *siswaService) DeleteById(id string) error {
+func (s *siswaService) DeleteById(id string, schoolUnitID ...string) error {
 	if s == nil || s.siswaData == nil {
 		return errors.New("Nil repository")
 	}
 	if id == "" {
 		return errors.New("validation error: id harus diisi")
 	}
-	if err := s.siswaData.DeleteById(id); err != nil {
+	if err := s.siswaData.DeleteById(id, schoolUnitID...); err != nil {
 		return fmt.Errorf("gagal menghapus data siswa: %w", err)
 	}
 	return nil

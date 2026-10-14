@@ -6,6 +6,7 @@ type (
 	// SiswaCore merepresentasikan data lengkap siswa
 	SiswaCore struct {
 		ID            string     `json:"id"`
+		SchoolUnitID  *string    `json:"school_unit_id,omitempty"`
 		Nama          string     `json:"nama"`
 		Kelas_ID      string     `json:"kelas_id"`
 		Nama_Kelas    string     `json:"nama_kelas"`
@@ -27,18 +28,18 @@ type (
 	}
 
 	DataSiswaInterface interface {
-		SelectAllSiswa() ([]SiswaCore, error)
+		SelectAllSiswa(schoolUnitID ...string) ([]SiswaCore, error)
 		InsertSiswa(insert *SiswaCore) error
-		Update(insert *SiswaCore, id string) error
-		SelectById(id string) (*SiswaCore, error)
-		DeleteById(id string) error
+		Update(insert *SiswaCore, id string, schoolUnitID ...string) error
+		SelectById(id string, schoolUnitID ...string) (*SiswaCore, error)
+		DeleteById(id string, schoolUnitID ...string) error
 	}
 
 	ServiceSiswaInterface interface {
-		SelectAllSiswa() ([]SiswaCore, error)
+		SelectAllSiswa(schoolUnitID ...string) ([]SiswaCore, error)
 		InsertSiswa(insert *SiswaCore) error
-		Update(insert *SiswaCore, id string) error
-		SelectById(id string) (*SiswaCore, error)
-		DeleteById(id string) error
+		Update(insert *SiswaCore, id string, schoolUnitID ...string) error
+		SelectById(id string, schoolUnitID ...string) (*SiswaCore, error)
+		DeleteById(id string, schoolUnitID ...string) error
 	}
 )

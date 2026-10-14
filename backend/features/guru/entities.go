@@ -7,6 +7,7 @@ type (
 	GuruCore struct {
 		ID                 string     `json:"id"`
 		ID_User            string     `json:"id_user"`
+		SchoolUnitID       *string    `json:"school_unit_id,omitempty"`
 		Nama               string     `json:"nama"`
 		NIP                string     `json:"nip"`
 		NUPTK              string     `json:"nuptk"`
@@ -24,18 +25,18 @@ type (
 	}
 
 	DataGuruInterface interface {
-		SelectAllGuru() ([]GuruCore, error)
+		SelectAllGuru(schoolUnitID ...string) ([]GuruCore, error)
 		InsertGuru(insert *GuruCore) error
-		Update(insert *GuruCore, id string) error
-		SelectById(id string) (*GuruCore, error)
-		DeleteById(id string) error
+		Update(insert *GuruCore, id string, schoolUnitID ...string) error
+		SelectById(id string, schoolUnitID ...string) (*GuruCore, error)
+		DeleteById(id string, schoolUnitID ...string) error
 	}
 
 	ServiceGuruInterface interface {
-		GetAllGuru() ([]GuruCore, error)
+		GetAllGuru(schoolUnitID ...string) ([]GuruCore, error)
 		InsertGuru(insert *GuruCore) error
-		UpdateGuru(insert *GuruCore, id string) error
-		SelectById(id string) (*GuruCore, error)
-		DeleteById(id string) error
+		UpdateGuru(insert *GuruCore, id string, schoolUnitID ...string) error
+		SelectById(id string, schoolUnitID ...string) (*GuruCore, error)
+		DeleteById(id string, schoolUnitID ...string) error
 	}
 )

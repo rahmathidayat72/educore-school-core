@@ -15,16 +15,26 @@ type mockDataKelas struct {
 	mock.Mock
 }
 
-func (m *mockDataKelas) SelectAll() ([]kelas.KelasCore, error) {
-	args := m.Called()
+func (m *mockDataKelas) SelectAll(schoolUnitID ...string) ([]kelas.KelasCore, error) {
+	var args mock.Arguments
+	if len(schoolUnitID) > 0 && schoolUnitID[0] != "" {
+		args = m.Called(schoolUnitID[0])
+	} else {
+		args = m.Called()
+	}
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).([]kelas.KelasCore), args.Error(1)
 }
 
-func (m *mockDataKelas) SelectById(id string) (*kelas.KelasCore, error) {
-	args := m.Called(id)
+func (m *mockDataKelas) SelectById(id string, schoolUnitID ...string) (*kelas.KelasCore, error) {
+	var args mock.Arguments
+	if len(schoolUnitID) > 0 && schoolUnitID[0] != "" {
+		args = m.Called(id, schoolUnitID[0])
+	} else {
+		args = m.Called(id)
+	}
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -36,13 +46,23 @@ func (m *mockDataKelas) Insert(insert *kelas.KelasCore) error {
 	return args.Error(0)
 }
 
-func (m *mockDataKelas) Update(insert *kelas.KelasCore, id string) error {
-	args := m.Called(insert, id)
+func (m *mockDataKelas) Update(insert *kelas.KelasCore, id string, schoolUnitID ...string) error {
+	var args mock.Arguments
+	if len(schoolUnitID) > 0 && schoolUnitID[0] != "" {
+		args = m.Called(insert, id, schoolUnitID[0])
+	} else {
+		args = m.Called(insert, id)
+	}
 	return args.Error(0)
 }
 
-func (m *mockDataKelas) DeleteById(id string) error {
-	args := m.Called(id)
+func (m *mockDataKelas) DeleteById(id string, schoolUnitID ...string) error {
+	var args mock.Arguments
+	if len(schoolUnitID) > 0 && schoolUnitID[0] != "" {
+		args = m.Called(id, schoolUnitID[0])
+	} else {
+		args = m.Called(id)
+	}
 	return args.Error(0)
 }
 

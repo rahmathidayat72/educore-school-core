@@ -27,11 +27,11 @@ func NewServiceGuru(repo guru.DataGuruInterface, db *pgxpool.Pool) guru.ServiceG
 	return &guruService{guruData: repo, db: db}
 }
 
-func (s *guruService) GetAllGuru() ([]guru.GuruCore, error) {
+func (s *guruService) GetAllGuru(schoolUnitID ...string) ([]guru.GuruCore, error) {
 	if s.guruData == nil {
 		return nil, errors.New("guru service: Nil repository")
 	}
-	gurus, err := s.guruData.SelectAllGuru()
+	gurus, err := s.guruData.SelectAllGuru(schoolUnitID...)
 	if err != nil {
 		return nil, errors.New("guru service: gagal mengambil data")
 	}
@@ -104,7 +104,7 @@ func (s *guruService) InsertGuru(insert *guru.GuruCore) error {
 	return s.guruData.InsertGuru(insert)
 }
 
-func (s *guruService) UpdateGuru(insert *guru.GuruCore, id string) error {
+func (s *guruService) UpdateGuru(insert *guru.GuruCore, id string, schoolUnitID ...string) error {
 	if s == nil || s.guruData == nil {
 		return errors.New("guru service: Nil repository")
 	}
@@ -115,7 +115,7 @@ func (s *guruService) UpdateGuru(insert *guru.GuruCore, id string) error {
 		return errors.New("validation error: id harus diisi")
 	}
 
-	existingData, err := s.guruData.SelectById(id)
+	existingData, err := s.guruData.SelectById(id, schoolUnitID...)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return errGuruNotFound
@@ -140,14 +140,14 @@ func (s *guruService) UpdateGuru(insert *guru.GuruCore, id string) error {
 		return err
 	}
 
-	if err := s.guruData.Update(insert, id); err != nil {
+	if err := s.guruData.Update(insert, id, schoolUnitID...); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *guruService) SelectById(id string) (*guru.GuruCore, error) {
-	guruData, err := s.guruData.SelectById(id)
+func (s *guruService) SelectById(id string, schoolUnitID ...string) (*guru.GuruCore, error) {
+	guruData, err := s.guruData.SelectById(id, schoolUnitID...)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, errGuruNotFound
@@ -157,14 +157,14 @@ func (s *guruService) SelectById(id string) (*guru.GuruCore, error) {
 	return guruData, nil
 }
 
-func (s *guruService) DeleteById(id string) error {
+func (s *guruService) DeleteById(id string, schoolUnitID ...string) error {
 	if s == nil || s.guruData == nil {
 		return errors.New("guru service: Nil repository")
 	}
 	if id == "" {
 		return errors.New("validation error: id harus diisi")
 	}
-	if err := s.guruData.DeleteById(id); err != nil {
+	if err := s.guruData.DeleteById(id, schoolUnitID...); err != nil {
 		return fmt.Errorf("gagal menghapus data guru: %w", err)
 	}
 	return nil

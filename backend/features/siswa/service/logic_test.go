@@ -16,8 +16,13 @@ type mockDataSiswa struct {
 	mock.Mock
 }
 
-func (m *mockDataSiswa) SelectAllSiswa() ([]siswa.SiswaCore, error) {
-	args := m.Called()
+func (m *mockDataSiswa) SelectAllSiswa(schoolUnitID ...string) ([]siswa.SiswaCore, error) {
+	var args mock.Arguments
+	if len(schoolUnitID) > 0 && schoolUnitID[0] != "" {
+		args = m.Called(schoolUnitID[0])
+	} else {
+		args = m.Called()
+	}
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -29,21 +34,36 @@ func (m *mockDataSiswa) InsertSiswa(insert *siswa.SiswaCore) error {
 	return args.Error(0)
 }
 
-func (m *mockDataSiswa) Update(insert *siswa.SiswaCore, id string) error {
-	args := m.Called(insert, id)
+func (m *mockDataSiswa) Update(insert *siswa.SiswaCore, id string, schoolUnitID ...string) error {
+	var args mock.Arguments
+	if len(schoolUnitID) > 0 && schoolUnitID[0] != "" {
+		args = m.Called(insert, id, schoolUnitID[0])
+	} else {
+		args = m.Called(insert, id)
+	}
 	return args.Error(0)
 }
 
-func (m *mockDataSiswa) SelectById(id string) (*siswa.SiswaCore, error) {
-	args := m.Called(id)
+func (m *mockDataSiswa) SelectById(id string, schoolUnitID ...string) (*siswa.SiswaCore, error) {
+	var args mock.Arguments
+	if len(schoolUnitID) > 0 && schoolUnitID[0] != "" {
+		args = m.Called(id, schoolUnitID[0])
+	} else {
+		args = m.Called(id)
+	}
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*siswa.SiswaCore), args.Error(1)
 }
 
-func (m *mockDataSiswa) DeleteById(id string) error {
-	args := m.Called(id)
+func (m *mockDataSiswa) DeleteById(id string, schoolUnitID ...string) error {
+	var args mock.Arguments
+	if len(schoolUnitID) > 0 && schoolUnitID[0] != "" {
+		args = m.Called(id, schoolUnitID[0])
+	} else {
+		args = m.Called(id)
+	}
 	return args.Error(0)
 }
 

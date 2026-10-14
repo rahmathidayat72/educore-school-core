@@ -81,6 +81,11 @@ func (kc *KelasController) Insert(w http.ResponseWriter, r *http.Request) error 
 	// Ubah objek kelasReq ke dalam objek kelasCore.
 	kelasCore = FormatKelasRequestToCore(kelasReq)
 
+	_, _, unitID, _ := helper.ExtractUserContext(r)
+	if kelasCore.SchoolUnitID == nil && unitID != "" {
+		kelasCore.SchoolUnitID = &unitID
+	}
+
 	// Insert data kelas ke dalam database menggunakan service kelas.
 	err := kc.KelasService.Insert(&kelasCore)
 	if err != nil {
@@ -104,8 +109,8 @@ func (kc *KelasController) Insert(w http.ResponseWriter, r *http.Request) error 
 // Kelas digunakan untuk menghandle HTTP request untuk mengambil semua data kelas.
 // Fungsi ini akan mengembalikan error jika terjadi kesalahan.
 func (kc *KelasController) Kelas(w http.ResponseWriter, r *http.Request) error {
-	// Mengambil semua data kelas dari database melalui service kelas.
-	kelas, err := kc.KelasService.SelectAll()
+	_, _, unitID, _ := helper.ExtractUserContext(r)
+	kelas, err := kc.KelasService.SelectAll(unitID)
 	if err != nil {
 		// Jika terjadi error maka akan mengembalikan error dengan pesan "Error retrieving data".
 		return fmt.Errorf("kelas controller: Error retrieving data: %v", err)
@@ -139,7 +144,8 @@ func (kc *KelasController) GetKelasById(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// Panggil service untuk mengambil data kelas berdasarkan ID
-	kelasData, err := kc.KelasService.SelectById(id)
+	_, _, unitID, _ := helper.ExtractUserContext(r)
+	kelasData, err := kc.KelasService.SelectById(id, unitID)
 	if err != nil {
 		// Jika terjadi error saat mengambil data kelas, kembalikan error dengan pesan yang sesuai.
 		return fmt.Errorf("kelas controller: gagal mengambil data kelas berdasarkan ID: %v", err)
@@ -216,8 +222,9 @@ func (kc *KelasController) UpdateKelas(w http.ResponseWriter, r *http.Request) e
 	// Format data KelasFormatter menjadi objek KelasCore.
 	updateKelas := FormatKelasRequestToCore(kelasReq)
 
+	_, _, unitID, _ := helper.ExtractUserContext(r)
 	// Panggil service untuk memperbarui data kelas berdasarkan ID.
-	err = kc.KelasService.Update(&updateKelas, idStr)
+	err = kc.KelasService.Update(&updateKelas, idStr, unitID)
 	if err != nil {
 		// Jika terjadi error saat memperbarui data kelas maka kembalikan error sesuai dengan status error.
 		// Jika terjadi error validasi, kirimkan response dengan status 400.
@@ -238,7 +245,7 @@ func (kc *KelasController) UpdateKelas(w http.ResponseWriter, r *http.Request) e
 	}
 
 	// Ambil data kelas yang telah diupdate dari database.
-	kelasUpdate, err := kc.KelasService.SelectById(idStr)
+	kelasUpdate, err := kc.KelasService.SelectById(idStr, unitID)
 	if err != nil {
 		// Jika terjadi error saat mengambil data kelas maka kembalikan error dengan status 500.
 		http.Error(w, "gagal mengambil data kelas", http.StatusInternalServerError)
@@ -275,7 +282,8 @@ func (kc *KelasController) DeleteKelas(w http.ResponseWriter, r *http.Request) e
 
 	// Panggil service untuk menghapus data kelas berdasarkan ID
 	// Jika terjadi error saat menghapus data kelas, kembalikan error dengan pesan yang sesuai.
-	err := kc.KelasService.DeleteById(id)
+	_, _, unitID, _ := helper.ExtractUserContext(r)
+	err := kc.KelasService.DeleteById(id, unitID)
 	if err != nil {
 		http.Error(w, "gagal menghapus data kelas", http.StatusInternalServerError)
 		return fmt.Errorf("kelas controller: gagal menghapus data kelas: %v", err)

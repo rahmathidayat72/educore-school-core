@@ -26,7 +26,7 @@ func NewDataGuru(db *pgxpool.Pool) guru.DataGuruInterface {
 	return &guruQuery{db: db}
 }
 
-func (r *guruQuery) SelectAllGuru() ([]guru.GuruCore, error) {
+func (r *guruQuery) SelectAllGuru(schoolUnitID ...string) ([]guru.GuruCore, error) {
 	if r.db == nil {
 		return nil, errors.New("guru model: Nil database")
 	}
@@ -45,12 +45,20 @@ func (r *guruQuery) SelectAllGuru() ([]guru.GuruCore, error) {
 		pendidikan_terakhir, 
 		status_kepegawaian, 
 		email, 
-		alamat 
+		alamat,
+		school_unit_id
 	FROM guru 
-	WHERE delete_at IS NULL 
-	ORDER BY nama ASC`
+	WHERE delete_at IS NULL`
 
-	rows, err := r.db.Query(context.Background(), query)
+	var args []interface{}
+	if len(schoolUnitID) > 0 && strings.TrimSpace(schoolUnitID[0]) != "" {
+		query += " AND school_unit_id = $1"
+		args = append(args, strings.TrimSpace(schoolUnitID[0]))
+	}
+
+	query += " ORDER BY nama ASC"
+
+	rows, err := r.db.Query(context.Background(), query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -77,6 +85,7 @@ func (r *guruQuery) SelectAllGuru() ([]guru.GuruCore, error) {
 			&g.StatusKepegawaian,
 			&g.Email,
 			&g.Alamat,
+			&g.SchoolUnitID,
 		)
 		if err != nil {
 			log.Printf("SelectAll error scan: %v", err)
@@ -146,12 +155,17 @@ func (r *guruQuery) InsertGuru(insert *guru.GuruCore) error {
 	query := `INSERT INTO guru (
 		id, id_user, nama, nip, nuptk, jenis_kelamin, tempat_lahir, tanggal_lahir,
 		no_telepon, agama, pendidikan_terakhir, status_kepegawaian, email, alamat,
-		update_at
+		school_unit_id, update_at
 	) VALUES (
 		$1, $2, $3, $4, $5, $6, $7, $8,
 		$9, $10, $11, $12, $13, $14,
-		CURRENT_TIMESTAMP
+		$15, CURRENT_TIMESTAMP
 	)`
+
+	var unitIDParam interface{}
+	if insert.SchoolUnitID != nil && strings.TrimSpace(*insert.SchoolUnitID) != "" {
+		unitIDParam = strings.TrimSpace(*insert.SchoolUnitID)
+	}
 
 	_, err = r.db.Exec(context.Background(), query,
 		insert.ID,
@@ -168,6 +182,7 @@ func (r *guruQuery) InsertGuru(insert *guru.GuruCore) error {
 		toNullString(insert.StatusKepegawaian),
 		toNullString(insert.Email),
 		toNullString(insert.Alamat),
+		unitIDParam,
 	)
 	if err != nil {
 		log.Printf("InsertGuru error exec: %v", err)
@@ -186,7 +201,7 @@ func (r *guruQuery) InsertGuru(insert *guru.GuruCore) error {
 	return nil
 }
 
-func (r *guruQuery) Update(insert *guru.GuruCore, id string) error {
+func (r *guruQuery) Update(insert *guru.GuruCore, id string, schoolUnitID ...string) error {
 	if r.db == nil {
 		return errors.New("koneksi database nil")
 	}
@@ -218,7 +233,7 @@ func (r *guruQuery) Update(insert *guru.GuruCore, id string) error {
 		update_at = CURRENT_TIMESTAMP
 	WHERE id = $1 AND delete_at IS NULL`
 
-	res, err := r.db.Exec(context.Background(), query,
+	args := []interface{}{
 		id,
 		insert.Nama,
 		toNullString(insert.NIP),
@@ -232,7 +247,14 @@ func (r *guruQuery) Update(insert *guru.GuruCore, id string) error {
 		toNullString(insert.StatusKepegawaian),
 		toNullString(insert.Email),
 		toNullString(insert.Alamat),
-	)
+	}
+
+	if len(schoolUnitID) > 0 && strings.TrimSpace(schoolUnitID[0]) != "" {
+		query += fmt.Sprintf(" AND school_unit_id = $%d", len(args)+1)
+		args = append(args, strings.TrimSpace(schoolUnitID[0]))
+	}
+
+	res, err := r.db.Exec(context.Background(), query, args...)
 	if err != nil {
 		log.Printf("UpdateGuru error exec: %v", err)
 		if strings.Contains(err.Error(), "idx_guru_nip_unique") {
@@ -255,7 +277,7 @@ func (r *guruQuery) Update(insert *guru.GuruCore, id string) error {
 	return nil
 }
 
-func (r *guruQuery) SelectById(id string) (*guru.GuruCore, error) {
+func (r *guruQuery) SelectById(id string, schoolUnitID ...string) (*guru.GuruCore, error) {
 	if r.db == nil {
 		return nil, errors.New("guru query: koneksi database nil")
 	}
@@ -274,11 +296,18 @@ func (r *guruQuery) SelectById(id string) (*guru.GuruCore, error) {
 		pendidikan_terakhir, 
 		status_kepegawaian, 
 		email, 
-		alamat 
+		alamat,
+		school_unit_id
 	FROM guru 
 	WHERE id = $1 AND delete_at IS NULL`
 
-	row := r.db.QueryRow(context.Background(), query, id)
+	args := []interface{}{id}
+	if len(schoolUnitID) > 0 && strings.TrimSpace(schoolUnitID[0]) != "" {
+		query += " AND school_unit_id = $2"
+		args = append(args, strings.TrimSpace(schoolUnitID[0]))
+	}
+
+	row := r.db.QueryRow(context.Background(), query, args...)
 
 	var g Guru
 	var idUser sql.NullString
@@ -298,6 +327,7 @@ func (r *guruQuery) SelectById(id string) (*guru.GuruCore, error) {
 		&g.StatusKepegawaian,
 		&g.Email,
 		&g.Alamat,
+		&g.SchoolUnitID,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -316,13 +346,19 @@ func (r *guruQuery) SelectById(id string) (*guru.GuruCore, error) {
 	return &result, nil
 }
 
-func (r *guruQuery) DeleteById(id string) error {
+func (r *guruQuery) DeleteById(id string, schoolUnitID ...string) error {
 	if r.db == nil {
 		return errors.New("guru query: koneksi database nil")
 	}
 
 	query := "UPDATE guru SET delete_at = NOW() WHERE id = $1 AND delete_at IS NULL"
-	res, err := r.db.Exec(context.Background(), query, id)
+	args := []interface{}{id}
+	if len(schoolUnitID) > 0 && strings.TrimSpace(schoolUnitID[0]) != "" {
+		query += " AND school_unit_id = $2"
+		args = append(args, strings.TrimSpace(schoolUnitID[0]))
+	}
+
+	res, err := r.db.Exec(context.Background(), query, args...)
 	if err != nil {
 		log.Printf("DeleteById error exec: %v", err)
 		return fmt.Errorf("delete failed: %w", err)

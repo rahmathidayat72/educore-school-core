@@ -156,11 +156,16 @@ func (m *mataPelajaranQuery) InsertMapel(insert *matapelajaran.MataPelajaranCore
 
 	query := `INSERT INTO mata_pelajaran (
 		id, nama_pelajaran, kode_mapel, kelompok, kurikulum, tingkat, fase,
-		jam_per_minggu, kkm, status, id_guru, kelas_id, deskripsi, update_at
+		jam_per_minggu, kkm, status, id_guru, kelas_id, deskripsi, school_unit_id, update_at
 	) VALUES (
 		$1, $2, $3, $4, $5, $6, $7,
-		$8, $9, $10, $11, $12, $13, CURRENT_TIMESTAMP
+		$8, $9, $10, $11, $12, $13, $14, CURRENT_TIMESTAMP
 	)`
+
+	var unitIDParam interface{}
+	if insert.SchoolUnitID != nil && strings.TrimSpace(*insert.SchoolUnitID) != "" {
+		unitIDParam = strings.TrimSpace(*insert.SchoolUnitID)
+	}
 
 	_, err := m.db.Exec(context.Background(), query,
 		insert.ID,
@@ -176,6 +181,7 @@ func (m *mataPelajaranQuery) InsertMapel(insert *matapelajaran.MataPelajaranCore
 		idGuruParam,
 		idKelasParam,
 		toNullString(insert.Deskripsi),
+		unitIDParam,
 	)
 	if err != nil {
 		log.Printf("InsertMapel error exec: %v", err)
@@ -185,12 +191,19 @@ func (m *mataPelajaranQuery) InsertMapel(insert *matapelajaran.MataPelajaranCore
 	return nil
 }
 
-func (m *mataPelajaranQuery) SelectAllMapel() ([]matapelajaran.MataPelajaranCore, error) {
+func (m *mataPelajaranQuery) SelectAllMapel(schoolUnitID ...string) ([]matapelajaran.MataPelajaranCore, error) {
 	if m.db == nil {
 		return nil, errors.New("Nil database")
 	}
 
-	query := `SELECT 
+	whereClause := "WHERE mp.delete_at IS NULL"
+	var args []interface{}
+	if len(schoolUnitID) > 0 && strings.TrimSpace(schoolUnitID[0]) != "" {
+		whereClause += " AND mp.school_unit_id = $1"
+		args = append(args, strings.TrimSpace(schoolUnitID[0]))
+	}
+
+	query := fmt.Sprintf(`SELECT 
 		mp.id,
 		COALESCE(mp.nama_pelajaran, ''),
 		mp.kode_mapel,
@@ -205,14 +218,15 @@ func (m *mataPelajaranQuery) SelectAllMapel() ([]matapelajaran.MataPelajaranCore
 		g.nama AS nama_guru,
 		mp.kelas_id,
 		k.kelas AS nama_kelas,
-		mp.deskripsi
+		mp.deskripsi,
+		mp.school_unit_id
 	FROM mata_pelajaran mp
 	LEFT JOIN guru g ON mp.id_guru = g.id
 	LEFT JOIN kelas k ON mp.kelas_id = k.id
-	WHERE mp.delete_at IS NULL
-	ORDER BY mp.nama_pelajaran ASC;`
+	%s
+	ORDER BY mp.nama_pelajaran ASC;`, whereClause)
 
-	rows, err := m.db.Query(context.Background(), query)
+	rows, err := m.db.Query(context.Background(), query, args...)
 	if err != nil {
 		log.Printf("SelectAllMapel error exec: %v", err)
 		return nil, fmt.Errorf("select failed: %w", err)
@@ -240,6 +254,7 @@ func (m *mataPelajaranQuery) SelectAllMapel() ([]matapelajaran.MataPelajaranCore
 			&mp.Kelas_ID,
 			&mp.Nama_Kelas,
 			&mp.Deskripsi,
+			&mp.SchoolUnitID,
 		)
 		if err != nil {
 			log.Printf("SelectAllMapel error scan: %v", err)
@@ -259,7 +274,7 @@ func (m *mataPelajaranQuery) SelectAllMapel() ([]matapelajaran.MataPelajaranCore
 	return result, nil
 }
 
-func (m *mataPelajaranQuery) SelectMapelById(id string) (*matapelajaran.MataPelajaranCore, error) {
+func (m *mataPelajaranQuery) SelectMapelById(id string, schoolUnitID ...string) (*matapelajaran.MataPelajaranCore, error) {
 	if m.db == nil {
 		return nil, errors.New("Nil database")
 	}
@@ -267,7 +282,14 @@ func (m *mataPelajaranQuery) SelectMapelById(id string) (*matapelajaran.MataPela
 		return nil, errors.New("ID cannot be empty")
 	}
 
-	query := `SELECT 
+	whereClause := "WHERE mp.id = $1 AND mp.delete_at IS NULL"
+	args := []interface{}{id}
+	if len(schoolUnitID) > 0 && strings.TrimSpace(schoolUnitID[0]) != "" {
+		whereClause += " AND mp.school_unit_id = $2"
+		args = append(args, strings.TrimSpace(schoolUnitID[0]))
+	}
+
+	query := fmt.Sprintf(`SELECT 
 		mp.id,
 		COALESCE(mp.nama_pelajaran, ''),
 		mp.kode_mapel,
@@ -282,14 +304,15 @@ func (m *mataPelajaranQuery) SelectMapelById(id string) (*matapelajaran.MataPela
 		g.nama AS nama_guru,
 		mp.kelas_id,
 		k.kelas AS nama_kelas,
-		mp.deskripsi
+		mp.deskripsi,
+		mp.school_unit_id
 	FROM mata_pelajaran mp
 	LEFT JOIN guru g ON mp.id_guru = g.id
 	LEFT JOIN kelas k ON mp.kelas_id = k.id
-	WHERE mp.id = $1 AND mp.delete_at IS NULL`
+	%s`, whereClause)
 
 	var mp MataPelajaran
-	err := m.db.QueryRow(context.Background(), query, id).Scan(
+	err := m.db.QueryRow(context.Background(), query, args...).Scan(
 		&mp.ID,
 		&mp.Nama_Pelajaran,
 		&mp.KodeMapel,
@@ -305,6 +328,7 @@ func (m *mataPelajaranQuery) SelectMapelById(id string) (*matapelajaran.MataPela
 		&mp.Kelas_ID,
 		&mp.Nama_Kelas,
 		&mp.Deskripsi,
+		&mp.SchoolUnitID,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -318,7 +342,7 @@ func (m *mataPelajaranQuery) SelectMapelById(id string) (*matapelajaran.MataPela
 	return &core, nil
 }
 
-func (m *mataPelajaranQuery) UpdateMapel(update *matapelajaran.MataPelajaranCore, id string) error {
+func (m *mataPelajaranQuery) UpdateMapel(update *matapelajaran.MataPelajaranCore, id string, schoolUnitID ...string) error {
 	if m.db == nil {
 		return errors.New("Nil database")
 	}
@@ -375,11 +399,9 @@ func (m *mataPelajaranQuery) UpdateMapel(update *matapelajaran.MataPelajaranCore
 		kelas_id = $11,
 		deskripsi = $12,
 		update_at = CURRENT_TIMESTAMP
-	WHERE id = $13 AND delete_at IS NULL;
-	`
+	WHERE id = $13 AND delete_at IS NULL`
 
-	res, err := m.db.Exec(
-		context.Background(), query,
+	args := []interface{}{
 		update.Nama_Pelajaran,
 		toNullString(update.KodeMapel),
 		toNullString(update.Kelompok),
@@ -393,7 +415,14 @@ func (m *mataPelajaranQuery) UpdateMapel(update *matapelajaran.MataPelajaranCore
 		idKelasParam,
 		toNullString(update.Deskripsi),
 		id,
-	)
+	}
+
+	if len(schoolUnitID) > 0 && strings.TrimSpace(schoolUnitID[0]) != "" {
+		query += fmt.Sprintf(" AND school_unit_id = $%d", len(args)+1)
+		args = append(args, strings.TrimSpace(schoolUnitID[0]))
+	}
+
+	res, err := m.db.Exec(context.Background(), query, args...)
 	if err != nil {
 		log.Printf("UpdateMapel error exec: %v", err)
 		return fmt.Errorf("update failed: %w", err)
@@ -407,7 +436,7 @@ func (m *mataPelajaranQuery) UpdateMapel(update *matapelajaran.MataPelajaranCore
 	return nil
 }
 
-func (m *mataPelajaranQuery) DeleteMapel(id string) error {
+func (m *mataPelajaranQuery) DeleteMapel(id string, schoolUnitID ...string) error {
 	if m.db == nil {
 		return errors.New("Nil database")
 	}
@@ -416,7 +445,13 @@ func (m *mataPelajaranQuery) DeleteMapel(id string) error {
 	}
 
 	query := "UPDATE mata_pelajaran SET delete_at = NOW() WHERE id = $1 AND delete_at IS NULL"
-	res, err := m.db.Exec(context.Background(), query, id)
+	args := []interface{}{id}
+	if len(schoolUnitID) > 0 && strings.TrimSpace(schoolUnitID[0]) != "" {
+		query += " AND school_unit_id = $2"
+		args = append(args, strings.TrimSpace(schoolUnitID[0]))
+	}
+
+	res, err := m.db.Exec(context.Background(), query, args...)
 	if err != nil {
 		log.Printf("DeleteMapel error exec: %v", err)
 		return fmt.Errorf("delete failed: %w", err)

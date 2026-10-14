@@ -101,11 +101,16 @@ func (k *kelasQuery) Insert(insert *kelas.KelasCore) error {
 
 	query := `INSERT INTO kelas (
 		id, kelas, kode_kelas, tingkat, fase, jurusan, tahun_ajaran, ruangan,
-		kapasitas, status, deskripsi, id_guru, update_at
+		kapasitas, status, deskripsi, id_guru, school_unit_id, update_at
 	) VALUES (
 		$1, $2, $3, $4, $5, $6, $7, $8,
-		$9, $10, $11, $12, CURRENT_TIMESTAMP
+		$9, $10, $11, $12, $13, CURRENT_TIMESTAMP
 	)`
+
+	var unitIDParam interface{}
+	if insert.SchoolUnitID != nil && strings.TrimSpace(*insert.SchoolUnitID) != "" {
+		unitIDParam = strings.TrimSpace(*insert.SchoolUnitID)
+	}
 
 	_, err := k.db.Exec(context.Background(), query,
 		insert.ID,
@@ -120,6 +125,7 @@ func (k *kelasQuery) Insert(insert *kelas.KelasCore) error {
 		status,
 		toNullString(insert.Deskripsi),
 		idGuruParam,
+		unitIDParam,
 	)
 	if err != nil {
 		log.Printf("InsertKelas error exec: %v", err)
@@ -132,12 +138,19 @@ func (k *kelasQuery) Insert(insert *kelas.KelasCore) error {
 	return nil
 }
 
-func (k *kelasQuery) SelectAll() ([]kelas.KelasCore, error) {
+func (k *kelasQuery) SelectAll(schoolUnitID ...string) ([]kelas.KelasCore, error) {
 	if k.db == nil {
 		return nil, errors.New("Nil database connection")
 	}
 
-	query := `
+	whereClause := "WHERE k.delete_at IS NULL"
+	var args []interface{}
+	if len(schoolUnitID) > 0 && strings.TrimSpace(schoolUnitID[0]) != "" {
+		whereClause += " AND k.school_unit_id = $1"
+		args = append(args, strings.TrimSpace(schoolUnitID[0]))
+	}
+
+	query := fmt.Sprintf(`
 		SELECT 
 			k.id, 
 			k.kelas, 
@@ -152,22 +165,22 @@ func (k *kelasQuery) SelectAll() ([]kelas.KelasCore, error) {
 			k.deskripsi,
 			k.id_guru, 
 			g.nama AS nama_guru,
-			COUNT(s.id) AS total_siswa
+			COUNT(s.id) AS total_siswa,
+			k.school_unit_id
 		FROM 
 			kelas k
 		LEFT JOIN 
 			guru g ON k.id_guru = g.id
 		LEFT JOIN
 			siswa s ON s.kelas_id = k.id AND s.delete_at IS NULL
-		WHERE 
-			k.delete_at IS NULL
+		%s
 		GROUP BY 
 			k.id, g.nama
 		ORDER BY 
 			k.kelas ASC
-	`
+	`, whereClause)
 
-	rows, err := k.db.Query(context.Background(), query)
+	rows, err := k.db.Query(context.Background(), query, args...)
 	if err != nil {
 		log.Printf("SelectAll error exec: %v", err)
 		return nil, fmt.Errorf("select failed: %w", err)
@@ -194,6 +207,7 @@ func (k *kelasQuery) SelectAll() ([]kelas.KelasCore, error) {
 			&kl.ID_Guru,
 			&kl.Nama_Guru,
 			&kl.TotalSiswa,
+			&kl.SchoolUnitID,
 		)
 		if err != nil {
 			log.Printf("SelectAll error scan: %v", err)
@@ -213,12 +227,19 @@ func (k *kelasQuery) SelectAll() ([]kelas.KelasCore, error) {
 	return result, nil
 }
 
-func (k *kelasQuery) SelectById(id string) (*kelas.KelasCore, error) {
+func (k *kelasQuery) SelectById(id string, schoolUnitID ...string) (*kelas.KelasCore, error) {
 	if k.db == nil {
 		return nil, errors.New("Nil database connection")
 	}
 
-	query := `
+	whereClause := "WHERE k.id = $1 AND k.delete_at IS NULL"
+	args := []interface{}{id}
+	if len(schoolUnitID) > 0 && strings.TrimSpace(schoolUnitID[0]) != "" {
+		whereClause += " AND k.school_unit_id = $2"
+		args = append(args, strings.TrimSpace(schoolUnitID[0]))
+	}
+
+	query := fmt.Sprintf(`
 		SELECT 
 			k.id, 
 			k.kelas, 
@@ -233,21 +254,21 @@ func (k *kelasQuery) SelectById(id string) (*kelas.KelasCore, error) {
 			k.deskripsi,
 			k.id_guru, 
 			g.nama AS nama_guru,
-			COUNT(s.id) AS total_siswa
+			COUNT(s.id) AS total_siswa,
+			k.school_unit_id
 		FROM 
 			kelas k
 		LEFT JOIN 
 			guru g ON k.id_guru = g.id 
 		LEFT JOIN
 			siswa s ON s.kelas_id = k.id AND s.delete_at IS NULL
-		WHERE 
-			k.id = $1 AND k.delete_at IS NULL
+		%s
 		GROUP BY
 			k.id, g.nama
-	`
+	`, whereClause)
 
 	var kl Kelas
-	err := k.db.QueryRow(context.Background(), query, id).Scan(
+	err := k.db.QueryRow(context.Background(), query, args...).Scan(
 		&kl.ID,
 		&kl.Kelas,
 		&kl.KodeKelas,
@@ -262,6 +283,7 @@ func (k *kelasQuery) SelectById(id string) (*kelas.KelasCore, error) {
 		&kl.ID_Guru,
 		&kl.Nama_Guru,
 		&kl.TotalSiswa,
+		&kl.SchoolUnitID,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -275,7 +297,7 @@ func (k *kelasQuery) SelectById(id string) (*kelas.KelasCore, error) {
 	return &core, nil
 }
 
-func (k *kelasQuery) Update(insert *kelas.KelasCore, id string) error {
+func (k *kelasQuery) Update(insert *kelas.KelasCore, id string, schoolUnitID ...string) error {
 	if k.db == nil {
 		return errors.New("Nil database connection")
 	}
@@ -317,7 +339,7 @@ func (k *kelasQuery) Update(insert *kelas.KelasCore, id string) error {
 		update_at = CURRENT_TIMESTAMP
 	WHERE id = $12 AND delete_at IS NULL`
 
-	res, err := k.db.Exec(context.Background(), query,
+	args := []interface{}{
 		insert.Kelas,
 		toNullString(insert.KodeKelas),
 		toNullString(insert.Tingkat),
@@ -330,7 +352,14 @@ func (k *kelasQuery) Update(insert *kelas.KelasCore, id string) error {
 		toNullString(insert.Deskripsi),
 		idGuruParam,
 		id,
-	)
+	}
+
+	if len(schoolUnitID) > 0 && strings.TrimSpace(schoolUnitID[0]) != "" {
+		query += fmt.Sprintf(" AND school_unit_id = $%d", len(args)+1)
+		args = append(args, strings.TrimSpace(schoolUnitID[0]))
+	}
+
+	res, err := k.db.Exec(context.Background(), query, args...)
 	if err != nil {
 		log.Printf("UpdateKelas error exec: %v", err)
 		if strings.Contains(err.Error(), "idx_kelas_kode_unique") {
@@ -347,13 +376,19 @@ func (k *kelasQuery) Update(insert *kelas.KelasCore, id string) error {
 	return nil
 }
 
-func (k *kelasQuery) DeleteById(id string) error {
+func (k *kelasQuery) DeleteById(id string, schoolUnitID ...string) error {
 	if k.db == nil {
 		return errors.New("Nil database connection")
 	}
 
 	query := "UPDATE kelas SET delete_at = NOW() WHERE id = $1 AND delete_at IS NULL"
-	res, err := k.db.Exec(context.Background(), query, id)
+	args := []interface{}{id}
+	if len(schoolUnitID) > 0 && strings.TrimSpace(schoolUnitID[0]) != "" {
+		query += " AND school_unit_id = $2"
+		args = append(args, strings.TrimSpace(schoolUnitID[0]))
+	}
+
+	res, err := k.db.Exec(context.Background(), query, args...)
 	if err != nil {
 		log.Printf("DeleteById error exec: %v", err)
 		return fmt.Errorf("delete failed: %w", err)

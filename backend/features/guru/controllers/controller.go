@@ -20,7 +20,8 @@ func NewGuruController(service guru.ServiceGuruInterface) *Gurucontroller {
 }
 
 func (gc *Gurucontroller) Guru(w http.ResponseWriter, r *http.Request) error {
-	gurus, err := gc.guruService.GetAllGuru()
+	_, _, unitID, _ := helper.ExtractUserContext(r)
+	gurus, err := gc.guruService.GetAllGuru(unitID)
 	if err != nil {
 		return fmt.Errorf("guru controller: Error retrieving data: %v", err)
 	}
@@ -75,6 +76,11 @@ func (gc *Gurucontroller) InsertGuru(w http.ResponseWriter, r *http.Request) err
 	}
 
 	guruCore := FormatGuruRequestToCore(guruReq)
+
+	_, _, unitID, _ := helper.ExtractUserContext(r)
+	if guruCore.SchoolUnitID == nil && unitID != "" {
+		guruCore.SchoolUnitID = &unitID
+	}
 
 	err := gc.guruService.InsertGuru(&guruCore)
 	if err != nil {
@@ -132,7 +138,8 @@ func (gc *Gurucontroller) UpdateGuru(w http.ResponseWriter, r *http.Request) err
 
 	updateGuru := FormatGuruRequestToCore(guruReq)
 
-	err := gc.guruService.UpdateGuru(&updateGuru, idStr)
+	_, _, unitID, _ := helper.ExtractUserContext(r)
+	err := gc.guruService.UpdateGuru(&updateGuru, idStr, unitID)
 	if err != nil {
 		if strings.Contains(err.Error(), "validation") || strings.Contains(err.Error(), "sudah terdaftar") || strings.Contains(err.Error(), "format") {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -146,7 +153,7 @@ func (gc *Gurucontroller) UpdateGuru(w http.ResponseWriter, r *http.Request) err
 		return err
 	}
 
-	updatedGuru, err := gc.guruService.SelectById(idStr)
+	updatedGuru, err := gc.guruService.SelectById(idStr, unitID)
 	if err != nil {
 		http.Error(w, "Gagal mengambil data setelah update", http.StatusInternalServerError)
 		return err
@@ -166,7 +173,8 @@ func (gc *Gurucontroller) GetGuruById(w http.ResponseWriter, r *http.Request) er
 		return fmt.Errorf("guru controller: ID guru tidak ditemukan dalam query parameter")
 	}
 
-	guruData, err := gc.guruService.SelectById(id)
+	_, _, unitID, _ := helper.ExtractUserContext(r)
+	guruData, err := gc.guruService.SelectById(id, unitID)
 	if err != nil {
 		if strings.Contains(err.Error(), "tidak ditemukan") {
 			http.Error(w, "Data guru tidak ditemukan", http.StatusNotFound)
@@ -189,7 +197,8 @@ func (gc *Gurucontroller) DeleteGuru(w http.ResponseWriter, r *http.Request) err
 		return fmt.Errorf("guru controller: ID guru tidak ditemukan dalam query parameter")
 	}
 
-	err := gc.guruService.DeleteById(id)
+	_, _, unitID, _ := helper.ExtractUserContext(r)
+	err := gc.guruService.DeleteById(id, unitID)
 	if err != nil {
 		return fmt.Errorf("guru controller: gagal menghapus data guru berdasarkan ID: %v", err)
 	}

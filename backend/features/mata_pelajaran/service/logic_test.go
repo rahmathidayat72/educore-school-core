@@ -15,16 +15,26 @@ type mockDataMataPelajaran struct {
 	mock.Mock
 }
 
-func (m *mockDataMataPelajaran) SelectAllMapel() ([]matapelajaran.MataPelajaranCore, error) {
-	args := m.Called()
+func (m *mockDataMataPelajaran) SelectAllMapel(schoolUnitID ...string) ([]matapelajaran.MataPelajaranCore, error) {
+	var args mock.Arguments
+	if len(schoolUnitID) > 0 {
+		args = m.Called(schoolUnitID[0])
+	} else {
+		args = m.Called()
+	}
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).([]matapelajaran.MataPelajaranCore), args.Error(1)
 }
 
-func (m *mockDataMataPelajaran) SelectMapelById(id string) (*matapelajaran.MataPelajaranCore, error) {
-	args := m.Called(id)
+func (m *mockDataMataPelajaran) SelectMapelById(id string, schoolUnitID ...string) (*matapelajaran.MataPelajaranCore, error) {
+	var args mock.Arguments
+	if len(schoolUnitID) > 0 {
+		args = m.Called(id, schoolUnitID[0])
+	} else {
+		args = m.Called(id)
+	}
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -36,13 +46,23 @@ func (m *mockDataMataPelajaran) InsertMapel(insert *matapelajaran.MataPelajaranC
 	return args.Error(0)
 }
 
-func (m *mockDataMataPelajaran) UpdateMapel(insert *matapelajaran.MataPelajaranCore, id string) error {
-	args := m.Called(insert, id)
+func (m *mockDataMataPelajaran) UpdateMapel(insert *matapelajaran.MataPelajaranCore, id string, schoolUnitID ...string) error {
+	var args mock.Arguments
+	if len(schoolUnitID) > 0 {
+		args = m.Called(insert, id, schoolUnitID[0])
+	} else {
+		args = m.Called(insert, id)
+	}
 	return args.Error(0)
 }
 
-func (m *mockDataMataPelajaran) DeleteMapel(id string) error {
-	args := m.Called(id)
+func (m *mockDataMataPelajaran) DeleteMapel(id string, schoolUnitID ...string) error {
+	var args mock.Arguments
+	if len(schoolUnitID) > 0 {
+		args = m.Called(id, schoolUnitID[0])
+	} else {
+		args = m.Called(id)
+	}
 	return args.Error(0)
 }
 

@@ -272,6 +272,38 @@ func GetTokenFromAuthorizationHeader(authorizationHeader string) string {
 	return parts[1]
 }
 
+// ExtractUserContext membaca klaim ID, Role, dan SchoolUnitID dari header Authorization request
+func ExtractUserContext(r *http.Request) (id string, role string, unitID string, isSuperAdmin bool) {
+	authHeader := r.Header.Get("Authorization")
+	tokenString := GetTokenFromAuthorizationHeader(authHeader)
+	if tokenString == "" {
+		return "", "", "", false
+	}
+
+	meta, err := VerifyTokenHeader(tokenString)
+	if err != nil {
+		return "", "", "", false
+	}
+
+	currentRole := strings.ToLower(strings.TrimSpace(meta.Role))
+	superAdmin := currentRole == "super_admin"
+
+	currentUnit := ""
+	if meta.SchoolUnitID != nil {
+		currentUnit = *meta.SchoolUnitID
+	}
+
+	// Jika Super Admin mengirimkan query param ?unit_id=..., gunakan unit tersebut untuk filter
+	if superAdmin {
+		paramUnit := r.URL.Query().Get("unit_id")
+		if paramUnit != "" {
+			currentUnit = paramUnit
+		}
+	}
+
+	return meta.ID, currentRole, currentUnit, superAdmin
+}
+
 // CORSMiddleware menangani Cross-Origin Resource Sharing (CORS)
 func CORSMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

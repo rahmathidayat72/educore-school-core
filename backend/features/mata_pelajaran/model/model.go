@@ -8,6 +8,7 @@ import (
 
 type MataPelajaran struct {
 	ID             string
+	SchoolUnitID   sql.NullString
 	Nama_Pelajaran string
 	KodeMapel      sql.NullString
 	Kelompok       sql.NullString
@@ -61,8 +62,15 @@ func FormatterResponse(res MataPelajaran) matapelajaran.MataPelajaranCore {
 		delAt = res.Delete_At.Format("2006-01-02 15:04:05")
 	}
 
+	var schoolUnitID *string
+	if res.SchoolUnitID.Valid && res.SchoolUnitID.String != "" {
+		s := res.SchoolUnitID.String
+		schoolUnitID = &s
+	}
+
 	return matapelajaran.MataPelajaranCore{
 		ID:             res.ID,
+		SchoolUnitID:   schoolUnitID,
 		Nama_Pelajaran: res.Nama_Pelajaran,
 		KodeMapel:      res.KodeMapel.String,
 		Kelompok:       res.Kelompok.String,

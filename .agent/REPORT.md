@@ -105,3 +105,18 @@
 - **Bukti / Verifikasi:**
   - `go test ./...` lulus 100% tanpa error atau regresi.
   - Test suites `features/auth`, `features/users`, dan `helper` seluruhnya berstatus `PASS`.
+
+### [2026-10-14] Task 03.2 — Isolasi Data Unit Sekolah di Level Query & Logic Backend
+- **Status:** `✅ Selesai dan terverifikasi`
+- **Requirement:** BUS-003, FR-001, FR-004, NFR-SEC-001
+- **Tindakan:**
+  1. Menambahkan helper `ExtractUserContext(r)` pada `helper/middlewares.go` untuk membaca metadata user, role, unit ID dari JWT claims serta query param `?unit_id=` bagi Super Admin Yayasan.
+  2. Mengimplementasikan isolasi data multi-unit pada modul `features/guru` (`entities.go`, `model/model.go`, `model/query.go`, `service/logic.go`, `controllers/controller.go`).
+  3. Mengimplementasikan isolasi data multi-unit pada modul `features/siswa` (`entities.go`, `model/model.go`, `model/query.go`, `service/logic.go`, `controllers/controllers.go`).
+  4. Mengimplementasikan isolasi data multi-unit pada modul `features/kelas` (`entities.go`, `model/model.go`, `model/query.go`, `service/logic.go`, `controllers/controller.go`).
+  5. Mengimplementasikan isolasi data multi-unit pada modul `features/mata_pelajaran` (`entities.go`, `model/model.go`, `model/query.go`, `service/logic.go`, `controllers/controller.go`, `controllers/formatter.go`).
+  6. Mengimplementasikan isolasi data multi-unit pada modul `features/jadwal` (`entities.go`, `model/query.go`, `service/logic.go`, `controllers/controller.go`) termasuk pembatasan deteksi bentrok jadwal (`CheckConflict`) hanya di dalam unit sekolah yang sama.
+  7. Memperbarui mock unit test yang terdampak (`guru`, `kelas`, `mata_pelajaran`, `siswa`) untuk mendukung signature variadic `schoolUnitID ...string`.
+- **Bukti / Verifikasi:**
+  - `go test -v ./...` berhasil dijalankan pada root backend: seluruh paket dan mock test berstatus `PASS` (100% lulus).
+  - `go build ./...` berhasil tanpa peringatan maupun error kompilasi.

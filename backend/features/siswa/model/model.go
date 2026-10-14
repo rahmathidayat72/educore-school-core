@@ -9,6 +9,7 @@ import (
 // Siswa merepresentasikan data siswa di database
 type Siswa struct {
 	ID            string
+	SchoolUnitID  sql.NullString
 	Kelas_ID      sql.NullString
 	Nama_Kelas    sql.NullString
 	Nama          string
@@ -45,8 +46,15 @@ func FormatterResponse(res Siswa) siswa.SiswaCore {
 		status = res.Status.String
 	}
 
+	var schoolUnitID *string
+	if res.SchoolUnitID.Valid && res.SchoolUnitID.String != "" {
+		s := res.SchoolUnitID.String
+		schoolUnitID = &s
+	}
+
 	return siswa.SiswaCore{
 		ID:            res.ID,
+		SchoolUnitID:  schoolUnitID,
 		Nama:          res.Nama,
 		Kelas_ID:      res.Kelas_ID.String,
 		Nama_Kelas:    res.Nama_Kelas.String,

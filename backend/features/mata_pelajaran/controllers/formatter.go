@@ -5,6 +5,7 @@ import matapelajaran "go_rest_native_sekolah/features/mata_pelajaran"
 // FormatterMataPelajaran digunakan untuk memformat data mata pelajaran lengkap
 type FormatterMataPelajaran struct {
 	ID             string  `json:"id"`
+	SchoolUnitID   *string `json:"school_unit_id,omitempty"`
 	Nama_Pelajaran string  `json:"mata_pelajaran"`
 	KodeMapel      string  `json:"kode_mapel"`
 	Kelompok       string  `json:"kelompok"`
@@ -26,6 +27,7 @@ func FormatterMapelList(cores []matapelajaran.MataPelajaranCore) []FormatterMata
 	for _, core := range cores {
 		formatted = append(formatted, FormatterMataPelajaran{
 			ID:             core.ID,
+			SchoolUnitID:   core.SchoolUnitID,
 			Nama_Pelajaran: core.Nama_Pelajaran,
 			KodeMapel:      core.KodeMapel,
 			Kelompok:       core.Kelompok,
@@ -48,6 +50,7 @@ func FormatterMapelList(cores []matapelajaran.MataPelajaranCore) []FormatterMata
 func FormatterMapelRequestToCore(req FormatterMataPelajaran) matapelajaran.MataPelajaranCore {
 	return matapelajaran.MataPelajaranCore{
 		ID:             req.ID,
+		SchoolUnitID:   req.SchoolUnitID,
 		Nama_Pelajaran: req.Nama_Pelajaran,
 		KodeMapel:      req.KodeMapel,
 		Kelompok:       req.Kelompok,

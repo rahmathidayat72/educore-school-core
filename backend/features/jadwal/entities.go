@@ -5,6 +5,7 @@ import "time"
 type (
 	JadwalCore struct {
 		ID              string     `json:"id"`
+		SchoolUnitID    *string    `json:"school_unit_id,omitempty"`
 		KodeJadwal      string     `json:"kode_jadwal"`
 		MataPelajaranID string     `json:"mata_pelajaran_id"`
 		KodeMapel       string     `json:"kode_mapel"`
@@ -40,21 +41,21 @@ type (
 	}
 
 	DataJadwalInterface interface {
-		SelectAll(role, userID, hariFilter, kelasIDFilter, guruIDFilter, tahunFilter, semesterFilter, statusFilter string) ([]JadwalCore, error)
-		SelectByID(id string) (*JadwalCore, error)
+		SelectAll(role, userID, hariFilter, kelasIDFilter, guruIDFilter, tahunFilter, semesterFilter, statusFilter string, schoolUnitID ...string) ([]JadwalCore, error)
+		SelectByID(id string, schoolUnitID ...string) (*JadwalCore, error)
 		Insert(input *JadwalCore) error
-		Update(id string, input *JadwalCore) error
-		Delete(id string) error
-		CheckConflict(excludeID, mapelID, guruID, kelasID, hari, jamMulai, jamSelesai, ruang, tahunAjaran, semester string, aktif bool) (*ConflictInfo, error)
+		Update(id string, input *JadwalCore, schoolUnitID ...string) error
+		Delete(id string, schoolUnitID ...string) error
+		CheckConflict(excludeID, mapelID, guruID, kelasID, hari, jamMulai, jamSelesai, ruang, tahunAjaran, semester string, aktif bool, schoolUnitID ...string) (*ConflictInfo, error)
 		GetGuruIDByUserID(userID string) (string, error)
 	}
 
 	ServiceJadwalInterface interface {
-		GetAll(role, userID, hariFilter, kelasIDFilter, guruIDFilter, tahunFilter, semesterFilter, statusFilter string) ([]JadwalCore, error)
-		GetByID(id string, role, userID string) (*JadwalCore, error)
+		GetAll(role, userID, hariFilter, kelasIDFilter, guruIDFilter, tahunFilter, semesterFilter, statusFilter string, schoolUnitID ...string) ([]JadwalCore, error)
+		GetByID(id string, role, userID string, schoolUnitID ...string) (*JadwalCore, error)
 		Create(input *JadwalCore, role, userID string) (*JadwalCore, error)
-		Update(id string, input *JadwalCore, role, userID string) (*JadwalCore, error)
-		Delete(id string, role, userID string) error
+		Update(id string, input *JadwalCore, role, userID string, schoolUnitID ...string) (*JadwalCore, error)
+		Delete(id string, role, userID string, schoolUnitID ...string) error
 	}
 )
 

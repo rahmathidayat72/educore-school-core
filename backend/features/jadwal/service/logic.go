@@ -20,12 +20,12 @@ func NewJadwalService(repo jadwal.DataJadwalInterface) jadwal.ServiceJadwalInter
 	return &JadwalService{repo: repo}
 }
 
-func (s *JadwalService) GetAll(role, userID, hariFilter, kelasIDFilter, guruIDFilter, tahunFilter, semesterFilter, statusFilter string) ([]jadwal.JadwalCore, error) {
-	return s.repo.SelectAll(role, userID, hariFilter, kelasIDFilter, guruIDFilter, tahunFilter, semesterFilter, statusFilter)
+func (s *JadwalService) GetAll(role, userID, hariFilter, kelasIDFilter, guruIDFilter, tahunFilter, semesterFilter, statusFilter string, schoolUnitID ...string) ([]jadwal.JadwalCore, error) {
+	return s.repo.SelectAll(role, userID, hariFilter, kelasIDFilter, guruIDFilter, tahunFilter, semesterFilter, statusFilter, schoolUnitID...)
 }
 
-func (s *JadwalService) GetByID(id string, role, userID string) (*jadwal.JadwalCore, error) {
-	data, err := s.repo.SelectByID(id)
+func (s *JadwalService) GetByID(id string, role, userID string, schoolUnitID ...string) (*jadwal.JadwalCore, error) {
+	data, err := s.repo.SelectByID(id, schoolUnitID...)
 	if err != nil {
 		return nil, err
 	}
@@ -116,8 +116,12 @@ func (s *JadwalService) Create(input *jadwal.JadwalCore, role, userID string) (*
 	}
 
 	// Cek bentrok jadwal
+	var unitParam string
+	if input.SchoolUnitID != nil {
+		unitParam = *input.SchoolUnitID
+	}
 	conflict, err := s.repo.CheckConflict("", input.MataPelajaranID, input.IDGuru, input.KelasID,
-		strconv.Itoa(input.Hari), input.JamMulai, input.JamSelesai, input.Ruang, input.TahunAjaran, input.Semester, input.Aktif)
+		strconv.Itoa(input.Hari), input.JamMulai, input.JamSelesai, input.Ruang, input.TahunAjaran, input.Semester, input.Aktif, unitParam)
 	if err != nil {
 		return nil, err
 	}
@@ -129,16 +133,16 @@ func (s *JadwalService) Create(input *jadwal.JadwalCore, role, userID string) (*
 		return nil, err
 	}
 
-	return s.repo.SelectByID(input.ID)
+	return s.repo.SelectByID(input.ID, unitParam)
 }
 
-func (s *JadwalService) Update(id string, input *jadwal.JadwalCore, role, userID string) (*jadwal.JadwalCore, error) {
+func (s *JadwalService) Update(id string, input *jadwal.JadwalCore, role, userID string, schoolUnitID ...string) (*jadwal.JadwalCore, error) {
 	if strings.TrimSpace(id) == "" {
 		return nil, errors.New("parameter id wajib diisi")
 	}
 
 	// Ambil data eksisting untuk merge dan cek otorisasi guru
-	existing, err := s.repo.SelectByID(id)
+	existing, err := s.repo.SelectByID(id, schoolUnitID...)
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +190,7 @@ func (s *JadwalService) Update(id string, input *jadwal.JadwalCore, role, userID
 
 	// Cek bentrok jadwal (exclude ID saat ini)
 	conflict, err := s.repo.CheckConflict(id, input.MataPelajaranID, input.IDGuru, input.KelasID,
-		strconv.Itoa(input.Hari), input.JamMulai, input.JamSelesai, input.Ruang, input.TahunAjaran, input.Semester, input.Aktif)
+		strconv.Itoa(input.Hari), input.JamMulai, input.JamSelesai, input.Ruang, input.TahunAjaran, input.Semester, input.Aktif, schoolUnitID...)
 	if err != nil {
 		return nil, err
 	}
@@ -194,15 +198,15 @@ func (s *JadwalService) Update(id string, input *jadwal.JadwalCore, role, userID
 		return nil, fmt.Errorf("konflik jadwal: %s", conflict.Message)
 	}
 
-	if err := s.repo.Update(id, input); err != nil {
+	if err := s.repo.Update(id, input, schoolUnitID...); err != nil {
 		return nil, err
 	}
 
-	return s.repo.SelectByID(id)
+	return s.repo.SelectByID(id, schoolUnitID...)
 }
 
-func (s *JadwalService) Delete(id string, role, userID string) error {
-	existing, err := s.repo.SelectByID(id)
+func (s *JadwalService) Delete(id string, role, userID string, schoolUnitID ...string) error {
+	existing, err := s.repo.SelectByID(id, schoolUnitID...)
 	if err != nil {
 		return err
 	}
@@ -214,5 +218,5 @@ func (s *JadwalService) Delete(id string, role, userID string) error {
 		}
 	}
 
-	return s.repo.Delete(id)
+	return s.repo.Delete(id, schoolUnitID...)
 }

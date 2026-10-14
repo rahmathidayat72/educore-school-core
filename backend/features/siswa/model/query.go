@@ -117,12 +117,17 @@ func (s *siswaQuery) InsertSiswa(insert *siswa.SiswaCore) error {
 	query := `INSERT INTO siswa (
 		id, kelas_id, nama, nis, nisn, jenis_kelamin, tempat_lahir, tanggal_lahir,
 		agama, no_telepon, nama_wali, no_telepon_wali, tahun_masuk, status,
-		email, alamat, update_at
+		email, alamat, school_unit_id, update_at
 	) VALUES (
 		$1, $2, $3, $4, $5, $6, $7, $8,
 		$9, $10, $11, $12, $13, $14,
-		$15, $16, CURRENT_TIMESTAMP
+		$15, $16, $17, CURRENT_TIMESTAMP
 	)`
+
+	var unitIDParam interface{}
+	if insert.SchoolUnitID != nil && strings.TrimSpace(*insert.SchoolUnitID) != "" {
+		unitIDParam = strings.TrimSpace(*insert.SchoolUnitID)
+	}
 
 	_, err = s.db.Exec(context.Background(), query,
 		insert.ID,
@@ -141,6 +146,7 @@ func (s *siswaQuery) InsertSiswa(insert *siswa.SiswaCore) error {
 		statusVal,
 		toNullString(insert.Email),
 		toNullString(insert.Alamat),
+		unitIDParam,
 	)
 	if err != nil {
 		log.Printf("InsertSiswa error exec: %v", err)
@@ -159,7 +165,7 @@ func (s *siswaQuery) InsertSiswa(insert *siswa.SiswaCore) error {
 	return nil
 }
 
-func (s *siswaQuery) SelectAllSiswa() ([]siswa.SiswaCore, error) {
+func (s *siswaQuery) SelectAllSiswa(schoolUnitID ...string) ([]siswa.SiswaCore, error) {
 	if s.db == nil {
 		return nil, errors.New("Nil database")
 	}
@@ -181,16 +187,24 @@ func (s *siswaQuery) SelectAllSiswa() ([]siswa.SiswaCore, error) {
 		s.tahun_masuk,
 		s.status,
 		s.email, 
-		s.alamat
+		s.alamat,
+		s.school_unit_id
 	FROM 
 		siswa s
 	LEFT JOIN 
 		kelas k ON s.kelas_id = k.id
 	WHERE 
-		s.delete_at IS NULL
-	ORDER BY s.nama ASC`
+		s.delete_at IS NULL`
 
-	rows, err := s.db.Query(context.Background(), query)
+	var args []interface{}
+	if len(schoolUnitID) > 0 && strings.TrimSpace(schoolUnitID[0]) != "" {
+		query += " AND s.school_unit_id = $1"
+		args = append(args, strings.TrimSpace(schoolUnitID[0]))
+	}
+
+	query += " ORDER BY s.nama ASC"
+
+	rows, err := s.db.Query(context.Background(), query, args...)
 	if err != nil {
 		log.Printf("SelectAllSiswa error query: %v", err)
 		return nil, fmt.Errorf("select failed: %w", err)
@@ -220,6 +234,7 @@ func (s *siswaQuery) SelectAllSiswa() ([]siswa.SiswaCore, error) {
 			&sw.Status,
 			&sw.Email,
 			&sw.Alamat,
+			&sw.SchoolUnitID,
 		)
 		if err != nil {
 			log.Printf("SelectAllSiswa error scan: %v", err)
@@ -239,7 +254,7 @@ func (s *siswaQuery) SelectAllSiswa() ([]siswa.SiswaCore, error) {
 	return result, nil
 }
 
-func (s *siswaQuery) SelectById(id string) (*siswa.SiswaCore, error) {
+func (s *siswaQuery) SelectById(id string, schoolUnitID ...string) (*siswa.SiswaCore, error) {
 	if s == nil || s.db == nil {
 		return nil, errors.New("Nil database")
 	}
@@ -264,12 +279,19 @@ func (s *siswaQuery) SelectById(id string) (*siswa.SiswaCore, error) {
 		s.tahun_masuk,
 		s.status,
 		s.email, 
-		s.alamat 
+		s.alamat,
+		s.school_unit_id
 	FROM siswa s 
 	LEFT JOIN kelas k ON s.kelas_id = k.id 
 	WHERE s.id = $1 AND s.delete_at IS NULL`
 
-	row := s.db.QueryRow(context.Background(), query, id)
+	args := []interface{}{id}
+	if len(schoolUnitID) > 0 && strings.TrimSpace(schoolUnitID[0]) != "" {
+		query += " AND s.school_unit_id = $2"
+		args = append(args, strings.TrimSpace(schoolUnitID[0]))
+	}
+
+	row := s.db.QueryRow(context.Background(), query, args...)
 
 	var sw Siswa
 	err := row.Scan(
@@ -290,6 +312,7 @@ func (s *siswaQuery) SelectById(id string) (*siswa.SiswaCore, error) {
 		&sw.Status,
 		&sw.Email,
 		&sw.Alamat,
+		&sw.SchoolUnitID,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -303,7 +326,7 @@ func (s *siswaQuery) SelectById(id string) (*siswa.SiswaCore, error) {
 	return &result, nil
 }
 
-func (s *siswaQuery) Update(insert *siswa.SiswaCore, id string) error {
+func (s *siswaQuery) Update(insert *siswa.SiswaCore, id string, schoolUnitID ...string) error {
 	if s == nil || s.db == nil {
 		return errors.New("Nil database")
 	}
@@ -347,7 +370,7 @@ func (s *siswaQuery) Update(insert *siswa.SiswaCore, id string) error {
 		update_at = CURRENT_TIMESTAMP
 	WHERE id = $16 AND delete_at IS NULL`
 
-	res, err := s.db.Exec(context.Background(), query,
+	args := []interface{}{
 		insert.Nama,
 		toNullString(insert.Email),
 		toNullString(insert.Alamat),
@@ -364,7 +387,14 @@ func (s *siswaQuery) Update(insert *siswa.SiswaCore, id string) error {
 		toNullString(insert.TahunMasuk),
 		statusVal,
 		id,
-	)
+	}
+
+	if len(schoolUnitID) > 0 && strings.TrimSpace(schoolUnitID[0]) != "" {
+		query += fmt.Sprintf(" AND school_unit_id = $%d", len(args)+1)
+		args = append(args, strings.TrimSpace(schoolUnitID[0]))
+	}
+
+	res, err := s.db.Exec(context.Background(), query, args...)
 	if err != nil {
 		log.Printf("Update error exec: %v", err)
 		if strings.Contains(err.Error(), "idx_siswa_nis_unique") {
@@ -387,13 +417,19 @@ func (s *siswaQuery) Update(insert *siswa.SiswaCore, id string) error {
 	return nil
 }
 
-func (s *siswaQuery) DeleteById(id string) error {
+func (s *siswaQuery) DeleteById(id string, schoolUnitID ...string) error {
 	if s.db == nil {
 		return errors.New("Koneksi database tidak ada")
 	}
 
 	query := "UPDATE siswa SET delete_at = NOW() WHERE id = $1 AND delete_at IS NULL"
-	res, err := s.db.Exec(context.Background(), query, id)
+	args := []interface{}{id}
+	if len(schoolUnitID) > 0 && strings.TrimSpace(schoolUnitID[0]) != "" {
+		query += " AND school_unit_id = $2"
+		args = append(args, strings.TrimSpace(schoolUnitID[0]))
+	}
+
+	res, err := s.db.Exec(context.Background(), query, args...)
 	if err != nil {
 		log.Printf("DeleteById error exec: %v", err)
 		return fmt.Errorf("hapus gagal: %w", err)

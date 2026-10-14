@@ -3,6 +3,7 @@ package matapelajaran
 // MataPelajaranCore merepresentasikan data lengkap mata pelajaran
 type MataPelajaranCore struct {
 	ID             string  `json:"id"`
+	SchoolUnitID   *string `json:"school_unit_id,omitempty"`
 	Nama_Pelajaran string  `json:"mata_pelajaran"`
 	KodeMapel      string  `json:"kode_mapel"`
 	Kelompok       string  `json:"kelompok"`
@@ -23,18 +24,18 @@ type MataPelajaranCore struct {
 
 // DataMataPelajaranInterface adalah interface untuk repository mata pelajaran
 type DataMataPelajaranInterface interface {
-	SelectAllMapel() ([]MataPelajaranCore, error)
-	SelectMapelById(id string) (*MataPelajaranCore, error)
+	SelectAllMapel(schoolUnitID ...string) ([]MataPelajaranCore, error)
+	SelectMapelById(id string, schoolUnitID ...string) (*MataPelajaranCore, error)
 	InsertMapel(insert *MataPelajaranCore) error
-	UpdateMapel(insert *MataPelajaranCore, id string) error
-	DeleteMapel(id string) error
+	UpdateMapel(insert *MataPelajaranCore, id string, schoolUnitID ...string) error
+	DeleteMapel(id string, schoolUnitID ...string) error
 }
 
 // ServiceMapelInterface adalah interface untuk service mata pelajaran
 type ServiceMapelInterface interface {
-	SelectAllMapel() ([]MataPelajaranCore, error)
-	SelectMapelById(id string) (*MataPelajaranCore, error)
+	SelectAllMapel(schoolUnitID ...string) ([]MataPelajaranCore, error)
+	SelectMapelById(id string, schoolUnitID ...string) (*MataPelajaranCore, error)
 	InsertMapel(insert *MataPelajaranCore) error
-	UpdateMapel(insert *MataPelajaranCore, id string) error
-	DeleteMapel(id string) error
+	UpdateMapel(insert *MataPelajaranCore, id string, schoolUnitID ...string) error
+	DeleteMapel(id string, schoolUnitID ...string) error
 }

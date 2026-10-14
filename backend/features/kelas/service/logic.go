@@ -44,12 +44,12 @@ func (k *kelasService) Insert(insert *kelas.KelasCore) error {
 	return k.kelasData.Insert(insert)
 }
 
-func (k *kelasService) SelectAll() ([]kelas.KelasCore, error) {
+func (k *kelasService) SelectAll(schoolUnitID ...string) ([]kelas.KelasCore, error) {
 	if k.kelasData == nil {
 		return nil, errors.New("kelas service: Nil repository")
 	}
 
-	kelass, err := k.kelasData.SelectAll()
+	kelass, err := k.kelasData.SelectAll(schoolUnitID...)
 	if err != nil {
 		return nil, errors.New("kelas service: gagal mengambil data")
 	}
@@ -57,12 +57,12 @@ func (k *kelasService) SelectAll() ([]kelas.KelasCore, error) {
 	return kelass, nil
 }
 
-func (k *kelasService) SelectById(id string) (*kelas.KelasCore, error) {
+func (k *kelasService) SelectById(id string, schoolUnitID ...string) (*kelas.KelasCore, error) {
 	if k.kelasData == nil {
 		return nil, errors.New("kelas service: Nil repository")
 	}
 
-	kelasItem, err := k.kelasData.SelectById(id)
+	kelasItem, err := k.kelasData.SelectById(id, schoolUnitID...)
 	if err != nil {
 		return nil, fmt.Errorf("kelas service: gagal mengambil data kelas: %w", err)
 	}
@@ -70,7 +70,7 @@ func (k *kelasService) SelectById(id string) (*kelas.KelasCore, error) {
 	return kelasItem, nil
 }
 
-func (k *kelasService) Update(insert *kelas.KelasCore, id string) error {
+func (k *kelasService) Update(insert *kelas.KelasCore, id string, schoolUnitID ...string) error {
 	if k == nil || k.kelasData == nil {
 		return errors.New("Nil repository")
 	}
@@ -79,7 +79,7 @@ func (k *kelasService) Update(insert *kelas.KelasCore, id string) error {
 		return errors.New("Validation error: id is nil")
 	}
 
-	exisData, err := k.kelasData.SelectById(id)
+	exisData, err := k.kelasData.SelectById(id, schoolUnitID...)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return errors.New("Data tidak ditemukan")
@@ -100,14 +100,14 @@ func (k *kelasService) Update(insert *kelas.KelasCore, id string) error {
 		insert.Status = exisData.Status
 	}
 
-	if err := k.kelasData.Update(insert, id); err != nil {
+	if err := k.kelasData.Update(insert, id, schoolUnitID...); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (k *kelasService) DeleteById(id string) error {
+func (k *kelasService) DeleteById(id string, schoolUnitID ...string) error {
 	if k == nil || k.kelasData == nil {
 		return errors.New("Nil repository")
 	}
@@ -116,7 +116,7 @@ func (k *kelasService) DeleteById(id string) error {
 		return errors.New("Validation error: id harus diisi")
 	}
 
-	if err := k.kelasData.DeleteById(id); err != nil {
+	if err := k.kelasData.DeleteById(id, schoolUnitID...); err != nil {
 		return fmt.Errorf("gagal menghapus data kelas: %w", err)
 	}
 

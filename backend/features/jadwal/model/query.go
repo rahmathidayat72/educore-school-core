@@ -47,7 +47,7 @@ func (m *JadwalModel) GetGuruIDByUserID(userID string) (string, error) {
 	return guruID, nil
 }
 
-func (m *JadwalModel) SelectAll(role, userID, hariFilter, kelasIDFilter, guruIDFilter, tahunFilter, semesterFilter, statusFilter string) ([]jadwal.JadwalCore, error) {
+func (m *JadwalModel) SelectAll(role, userID, hariFilter, kelasIDFilter, guruIDFilter, tahunFilter, semesterFilter, statusFilter string, schoolUnitID ...string) ([]jadwal.JadwalCore, error) {
 	ctx := context.Background()
 	queryBuilder := `
 		SELECT 
@@ -74,7 +74,8 @@ func (m *JadwalModel) SelectAll(role, userID, hariFilter, kelasIDFilter, guruIDF
 			COALESCE(j.tahun_ajaran, '') AS tahun_ajaran,
 			COALESCE(j.semester, '') AS semester,
 			COALESCE(j.keterangan, '') AS keterangan,
-			j.aktif
+			j.aktif,
+			j.school_unit_id
 		FROM jadwal_pelajaran j
 		JOIN mata_pelajaran mp ON mp.id = j.mata_pelajaran_id AND mp.delete_at IS NULL
 		LEFT JOIN guru g ON g.id = COALESCE(j.guru_id, mp.id_guru) AND g.delete_at IS NULL
@@ -84,6 +85,12 @@ func (m *JadwalModel) SelectAll(role, userID, hariFilter, kelasIDFilter, guruIDF
 
 	var args []interface{}
 	argIdx := 1
+
+	if len(schoolUnitID) > 0 && strings.TrimSpace(schoolUnitID[0]) != "" {
+		queryBuilder += fmt.Sprintf(" AND j.school_unit_id = $%d", argIdx)
+		args = append(args, strings.TrimSpace(schoolUnitID[0]))
+		argIdx++
+	}
 
 	// Jika role guru, otomatis filter ke jadwal guru tersebut
 	if strings.ToLower(role) == "guru" {
@@ -144,6 +151,7 @@ func (m *JadwalModel) SelectAll(role, userID, hariFilter, kelasIDFilter, guruIDF
 	list := make([]jadwal.JadwalCore, 0)
 	for rows.Next() {
 		var item jadwal.JadwalCore
+		var schoolUnitID sql.NullString
 		err := rows.Scan(
 			&item.ID,
 			&item.KodeJadwal,
@@ -169,9 +177,14 @@ func (m *JadwalModel) SelectAll(role, userID, hariFilter, kelasIDFilter, guruIDF
 			&item.Semester,
 			&item.Keterangan,
 			&item.Aktif,
+			&schoolUnitID,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("scan jadwal error: %w", err)
+		}
+		if schoolUnitID.Valid && schoolUnitID.String != "" {
+			s := schoolUnitID.String
+			item.SchoolUnitID = &s
 		}
 		item.NamaHari = jadwal.NamaHariIndo(item.Hari)
 		list = append(list, item)
@@ -180,9 +193,17 @@ func (m *JadwalModel) SelectAll(role, userID, hariFilter, kelasIDFilter, guruIDF
 	return list, nil
 }
 
-func (m *JadwalModel) SelectByID(id string) (*jadwal.JadwalCore, error) {
+func (m *JadwalModel) SelectByID(id string, schoolUnitID ...string) (*jadwal.JadwalCore, error) {
 	ctx := context.Background()
-	query := `
+	whereClause := "WHERE j.id = $1 AND j.delete_at IS NULL"
+	args := []interface{}{id}
+
+	if len(schoolUnitID) > 0 && strings.TrimSpace(schoolUnitID[0]) != "" {
+		whereClause += " AND j.school_unit_id = $2"
+		args = append(args, strings.TrimSpace(schoolUnitID[0]))
+	}
+
+	query := fmt.Sprintf(`
 		SELECT 
 			j.id,
 			COALESCE(j.kode_jadwal, '') AS kode_jadwal,
@@ -207,16 +228,18 @@ func (m *JadwalModel) SelectByID(id string) (*jadwal.JadwalCore, error) {
 			COALESCE(j.tahun_ajaran, '') AS tahun_ajaran,
 			COALESCE(j.semester, '') AS semester,
 			COALESCE(j.keterangan, '') AS keterangan,
-			j.aktif
+			j.aktif,
+			j.school_unit_id
 		FROM jadwal_pelajaran j
 		JOIN mata_pelajaran mp ON mp.id = j.mata_pelajaran_id AND mp.delete_at IS NULL
 		LEFT JOIN guru g ON g.id = COALESCE(j.guru_id, mp.id_guru) AND g.delete_at IS NULL
 		LEFT JOIN kelas k ON k.id = COALESCE(j.kelas_id, mp.kelas_id) AND k.delete_at IS NULL
-		WHERE j.id = $1 AND j.delete_at IS NULL
-	`
+		%s
+	`, whereClause)
 
 	var item jadwal.JadwalCore
-	err := m.db.QueryRow(ctx, query, id).Scan(
+	var unitID sql.NullString
+	err := m.db.QueryRow(ctx, query, args...).Scan(
 		&item.ID,
 		&item.KodeJadwal,
 		&item.MataPelajaranID,
@@ -241,6 +264,7 @@ func (m *JadwalModel) SelectByID(id string) (*jadwal.JadwalCore, error) {
 		&item.Semester,
 		&item.Keterangan,
 		&item.Aktif,
+		&unitID,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -248,11 +272,15 @@ func (m *JadwalModel) SelectByID(id string) (*jadwal.JadwalCore, error) {
 		}
 		return nil, err
 	}
+	if unitID.Valid && unitID.String != "" {
+		s := unitID.String
+		item.SchoolUnitID = &s
+	}
 	item.NamaHari = jadwal.NamaHariIndo(item.Hari)
 	return &item, nil
 }
 
-func (m *JadwalModel) CheckConflict(excludeID, mapelID, guruID, kelasID, hari, jamMulai, jamSelesai, ruang, tahunAjaran, semester string, aktif bool) (*jadwal.ConflictInfo, error) {
+func (m *JadwalModel) CheckConflict(excludeID, mapelID, guruID, kelasID, hari, jamMulai, jamSelesai, ruang, tahunAjaran, semester string, aktif bool, schoolUnitID ...string) (*jadwal.ConflictInfo, error) {
 	// Jika status jadwal tidak aktif, tidak perlu memicu bentrok operasional
 	if !aktif {
 		return &jadwal.ConflictInfo{HasConflict: false}, nil
@@ -294,9 +322,16 @@ func (m *JadwalModel) CheckConflict(excludeID, mapelID, guruID, kelasID, hari, j
 		sem = "Ganjil"
 	}
 
+	var unitFilter string
+	var unitParam interface{}
+	if len(schoolUnitID) > 0 && strings.TrimSpace(schoolUnitID[0]) != "" {
+		unitFilter = " AND j2.school_unit_id = $8"
+		unitParam = strings.TrimSpace(schoolUnitID[0])
+	}
+
 	// 2. Cek konflik Guru: Apakah guru sudah mengajar pada jam dan semester/tahun yang sama?
 	if actualGuruID != "" {
-		guruCheckQuery := `
+		guruCheckQuery := fmt.Sprintf(`
 			SELECT 
 				COALESCE(g2.nama, 'Guru'),
 				COALESCE(k2.kelas, 'Lain'), 
@@ -315,10 +350,17 @@ func (m *JadwalModel) CheckConflict(excludeID, mapelID, guruID, kelasID, hari, j
 			  AND LOWER(TRIM(j2.tahun_ajaran)) = LOWER(TRIM($4))
 			  AND LOWER(TRIM(j2.semester)) = LOWER(TRIM($5))
 			  AND (j2.jam_mulai < $7::time AND j2.jam_selesai > $6::time)
+			  %s
 			LIMIT 1
-		`
+		`, unitFilter)
+
+		args := []interface{}{actualGuruID, h, excludeID, tahun, sem, jamMulai, jamSelesai}
+		if unitParam != nil {
+			args = append(args, unitParam)
+		}
+
 		var confGuru, confKelas, confMapel, confMulai, confSelesai string
-		err := m.db.QueryRow(ctx, guruCheckQuery, actualGuruID, h, excludeID, tahun, sem, jamMulai, jamSelesai).
+		err := m.db.QueryRow(ctx, guruCheckQuery, args...).
 			Scan(&confGuru, &confKelas, &confMapel, &confMulai, &confSelesai)
 		if err == nil {
 			return &jadwal.ConflictInfo{
@@ -331,7 +373,7 @@ func (m *JadwalModel) CheckConflict(excludeID, mapelID, guruID, kelasID, hari, j
 
 	// 3. Cek konflik Kelas: Apakah kelas sudah ada pelajaran lain pada jam bertabrakan?
 	if actualKelasID != "" {
-		kelasCheckQuery := `
+		kelasCheckQuery := fmt.Sprintf(`
 			SELECT 
 				COALESCE(k2.kelas, 'Kelas'),
 				COALESCE(mp2.nama_pelajaran, ''), 
@@ -350,10 +392,17 @@ func (m *JadwalModel) CheckConflict(excludeID, mapelID, guruID, kelasID, hari, j
 			  AND LOWER(TRIM(j2.tahun_ajaran)) = LOWER(TRIM($4))
 			  AND LOWER(TRIM(j2.semester)) = LOWER(TRIM($5))
 			  AND (j2.jam_mulai < $7::time AND j2.jam_selesai > $6::time)
+			  %s
 			LIMIT 1
-		`
+		`, unitFilter)
+
+		args := []interface{}{actualKelasID, h, excludeID, tahun, sem, jamMulai, jamSelesai}
+		if unitParam != nil {
+			args = append(args, unitParam)
+		}
+
 		var confKelas, confMapel, confGuru, confMulai, confSelesai string
-		err := m.db.QueryRow(ctx, kelasCheckQuery, actualKelasID, h, excludeID, tahun, sem, jamMulai, jamSelesai).
+		err := m.db.QueryRow(ctx, kelasCheckQuery, args...).
 			Scan(&confKelas, &confMapel, &confGuru, &confMulai, &confSelesai)
 		if err == nil {
 			return &jadwal.ConflictInfo{
@@ -367,7 +416,7 @@ func (m *JadwalModel) CheckConflict(excludeID, mapelID, guruID, kelasID, hari, j
 	// 4. Cek konflik Ruangan jika ruang diisi
 	ruangTrim := strings.TrimSpace(ruang)
 	if ruangTrim != "" {
-		ruangCheckQuery := `
+		ruangCheckQuery := fmt.Sprintf(`
 			SELECT 
 				COALESCE(k2.kelas, 'Lain'), 
 				COALESCE(mp2.nama_pelajaran, ''), 
@@ -384,10 +433,17 @@ func (m *JadwalModel) CheckConflict(excludeID, mapelID, guruID, kelasID, hari, j
 			  AND LOWER(TRIM(j2.tahun_ajaran)) = LOWER(TRIM($4))
 			  AND LOWER(TRIM(j2.semester)) = LOWER(TRIM($5))
 			  AND (j2.jam_mulai < $7::time AND j2.jam_selesai > $6::time)
+			  %s
 			LIMIT 1
-		`
+		`, unitFilter)
+
+		args := []interface{}{ruangTrim, h, excludeID, tahun, sem, jamMulai, jamSelesai}
+		if unitParam != nil {
+			args = append(args, unitParam)
+		}
+
 		var confKelas, confMapel, confMulai, confSelesai string
-		err := m.db.QueryRow(ctx, ruangCheckQuery, ruangTrim, h, excludeID, tahun, sem, jamMulai, jamSelesai).
+		err := m.db.QueryRow(ctx, ruangCheckQuery, args...).
 			Scan(&confKelas, &confMapel, &confMulai, &confSelesai)
 		if err == nil {
 			return &jadwal.ConflictInfo{
@@ -429,17 +485,22 @@ func (m *JadwalModel) Insert(input *jadwal.JadwalCore) error {
 		jamKeSelesai = sql.NullInt32{Int32: int32(input.JamKeSelesai), Valid: true}
 	}
 
+	var unitIDParam interface{}
+	if input.SchoolUnitID != nil && strings.TrimSpace(*input.SchoolUnitID) != "" {
+		unitIDParam = strings.TrimSpace(*input.SchoolUnitID)
+	}
+
 	query := `
 		INSERT INTO jadwal_pelajaran (
 			id, kode_jadwal, mata_pelajaran_id, guru_id, kelas_id,
 			hari, jam_ke_mulai, jam_ke_selesai, jam_mulai, jam_selesai,
 			ruang, jenis_kegiatan, tahun_ajaran, semester, keterangan,
-			aktif, created_at, update_at
+			aktif, school_unit_id, created_at, update_at
 		) VALUES (
 			$1, $2, $3, $4, $5,
 			$6, $7, $8, $9::time, $10::time,
 			$11, $12, $13, $14, $15,
-			$16, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+			$16, $17, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 		)
 	`
 	_, err := m.db.Exec(ctx, query,
@@ -459,6 +520,7 @@ func (m *JadwalModel) Insert(input *jadwal.JadwalCore) error {
 		sem,
 		toNullString(input.Keterangan),
 		input.Aktif,
+		unitIDParam,
 	)
 	if err != nil {
 		if strings.Contains(err.Error(), "idx_jadwal_kode_unique") {
@@ -469,7 +531,7 @@ func (m *JadwalModel) Insert(input *jadwal.JadwalCore) error {
 	return nil
 }
 
-func (m *JadwalModel) Update(id string, input *jadwal.JadwalCore) error {
+func (m *JadwalModel) Update(id string, input *jadwal.JadwalCore, schoolUnitID ...string) error {
 	ctx := context.Background()
 
 	tahun := strings.TrimSpace(input.TahunAjaran)
@@ -514,7 +576,7 @@ func (m *JadwalModel) Update(id string, input *jadwal.JadwalCore) error {
 		    update_at = CURRENT_TIMESTAMP
 		WHERE id = $16 AND delete_at IS NULL
 	`
-	res, err := m.db.Exec(ctx, query,
+	args := []interface{}{
 		toNullString(input.KodeJadwal),
 		input.MataPelajaranID,
 		toNullString(input.IDGuru),
@@ -531,7 +593,14 @@ func (m *JadwalModel) Update(id string, input *jadwal.JadwalCore) error {
 		toNullString(input.Keterangan),
 		input.Aktif,
 		id,
-	)
+	}
+
+	if len(schoolUnitID) > 0 && strings.TrimSpace(schoolUnitID[0]) != "" {
+		query += fmt.Sprintf(" AND school_unit_id = $%d", len(args)+1)
+		args = append(args, strings.TrimSpace(schoolUnitID[0]))
+	}
+
+	res, err := m.db.Exec(ctx, query, args...)
 	if err != nil {
 		if strings.Contains(err.Error(), "idx_jadwal_kode_unique") {
 			return errors.New("kode jadwal sudah digunakan pada sesi jadwal lain")
@@ -544,14 +613,20 @@ func (m *JadwalModel) Update(id string, input *jadwal.JadwalCore) error {
 	return nil
 }
 
-func (m *JadwalModel) Delete(id string) error {
+func (m *JadwalModel) Delete(id string, schoolUnitID ...string) error {
 	ctx := context.Background()
 	query := `
 		UPDATE jadwal_pelajaran
 		SET delete_at = CURRENT_TIMESTAMP
 		WHERE id = $1 AND delete_at IS NULL
 	`
-	res, err := m.db.Exec(ctx, query, id)
+	args := []interface{}{id}
+	if len(schoolUnitID) > 0 && strings.TrimSpace(schoolUnitID[0]) != "" {
+		query += " AND school_unit_id = $2"
+		args = append(args, strings.TrimSpace(schoolUnitID[0]))
+	}
+
+	res, err := m.db.Exec(ctx, query, args...)
 	if err != nil {
 		return err
 	}

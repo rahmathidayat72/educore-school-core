@@ -7,22 +7,23 @@ import (
 )
 
 type Kelas struct {
-	ID          string
-	Kelas       string
-	KodeKelas   sql.NullString
-	Tingkat     sql.NullString
-	Fase        sql.NullString
-	Jurusan     sql.NullString
-	TahunAjaran sql.NullString
-	Ruangan     sql.NullString
-	Kapasitas   sql.NullInt32
-	Status      sql.NullString
-	Deskripsi   sql.NullString
-	ID_Guru     sql.NullString
-	Nama_Guru   sql.NullString
-	TotalSiswa  int
-	Update_At   time.Time
-	Delete_At   *time.Time
+	ID           string
+	SchoolUnitID sql.NullString
+	Kelas        string
+	KodeKelas    sql.NullString
+	Tingkat      sql.NullString
+	Fase         sql.NullString
+	Jurusan      sql.NullString
+	TahunAjaran  sql.NullString
+	Ruangan      sql.NullString
+	Kapasitas    sql.NullInt32
+	Status       sql.NullString
+	Deskripsi    sql.NullString
+	ID_Guru      sql.NullString
+	Nama_Guru    sql.NullString
+	TotalSiswa   int
+	Update_At    time.Time
+	Delete_At    *time.Time
 }
 
 func (k *Kelas) TableName() string {
@@ -55,9 +56,16 @@ func FormatterResponse(res Kelas) kelas.KelasCore {
 		delAt = res.Delete_At.Format("2006-01-02 15:04:05")
 	}
 
+	var schoolUnitID *string
+	if res.SchoolUnitID.Valid && res.SchoolUnitID.String != "" {
+		s := res.SchoolUnitID.String
+		schoolUnitID = &s
+	}
+
 	return kelas.KelasCore{
-		ID:          res.ID,
-		Kelas:       res.Kelas,
+		ID:           res.ID,
+		SchoolUnitID: schoolUnitID,
+		Kelas:        res.Kelas,
 		KodeKelas:   res.KodeKelas.String,
 		Tingkat:     res.Tingkat.String,
 		Fase:        res.Fase.String,

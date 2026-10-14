@@ -17,8 +17,13 @@ type mockDataGuru struct {
 	mock.Mock
 }
 
-func (m *mockDataGuru) SelectAllGuru() ([]guru.GuruCore, error) {
-	args := m.Called()
+func (m *mockDataGuru) SelectAllGuru(schoolUnitID ...string) ([]guru.GuruCore, error) {
+	var args mock.Arguments
+	if len(schoolUnitID) > 0 && schoolUnitID[0] != "" {
+		args = m.Called(schoolUnitID[0])
+	} else {
+		args = m.Called()
+	}
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -30,21 +35,36 @@ func (m *mockDataGuru) InsertGuru(insert *guru.GuruCore) error {
 	return args.Error(0)
 }
 
-func (m *mockDataGuru) Update(insert *guru.GuruCore, id string) error {
-	args := m.Called(insert, id)
+func (m *mockDataGuru) Update(insert *guru.GuruCore, id string, schoolUnitID ...string) error {
+	var args mock.Arguments
+	if len(schoolUnitID) > 0 && schoolUnitID[0] != "" {
+		args = m.Called(insert, id, schoolUnitID[0])
+	} else {
+		args = m.Called(insert, id)
+	}
 	return args.Error(0)
 }
 
-func (m *mockDataGuru) SelectById(id string) (*guru.GuruCore, error) {
-	args := m.Called(id)
+func (m *mockDataGuru) SelectById(id string, schoolUnitID ...string) (*guru.GuruCore, error) {
+	var args mock.Arguments
+	if len(schoolUnitID) > 0 && schoolUnitID[0] != "" {
+		args = m.Called(id, schoolUnitID[0])
+	} else {
+		args = m.Called(id)
+	}
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*guru.GuruCore), args.Error(1)
 }
 
-func (m *mockDataGuru) DeleteById(id string) error {
-	args := m.Called(id)
+func (m *mockDataGuru) DeleteById(id string, schoolUnitID ...string) error {
+	var args mock.Arguments
+	if len(schoolUnitID) > 0 && schoolUnitID[0] != "" {
+		args = m.Called(id, schoolUnitID[0])
+	} else {
+		args = m.Called(id)
+	}
 	return args.Error(0)
 }
 

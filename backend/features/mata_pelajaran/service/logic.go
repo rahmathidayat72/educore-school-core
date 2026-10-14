@@ -58,12 +58,12 @@ func (m *mataPelajaranServiceinterface) InsertMapel(insert *matapelajaran.MataPe
 	return m.mataPelajaranData.InsertMapel(insert)
 }
 
-func (m *mataPelajaranServiceinterface) SelectAllMapel() ([]matapelajaran.MataPelajaranCore, error) {
+func (m *mataPelajaranServiceinterface) SelectAllMapel(schoolUnitID ...string) ([]matapelajaran.MataPelajaranCore, error) {
 	if m.mataPelajaranData == nil {
 		return nil, errors.New("Nil repository")
 	}
 
-	mapels, err := m.mataPelajaranData.SelectAllMapel()
+	mapels, err := m.mataPelajaranData.SelectAllMapel(schoolUnitID...)
 	if err != nil {
 		return nil, errors.New("MataPelajaranService: gagal mengambil data")
 	}
@@ -71,12 +71,12 @@ func (m *mataPelajaranServiceinterface) SelectAllMapel() ([]matapelajaran.MataPe
 	return mapels, nil
 }
 
-func (m *mataPelajaranServiceinterface) SelectMapelById(id string) (*matapelajaran.MataPelajaranCore, error) {
+func (m *mataPelajaranServiceinterface) SelectMapelById(id string, schoolUnitID ...string) (*matapelajaran.MataPelajaranCore, error) {
 	if m.mataPelajaranData == nil {
 		return nil, errors.New("Nil repository")
 	}
 
-	mapel, err := m.mataPelajaranData.SelectMapelById(id)
+	mapel, err := m.mataPelajaranData.SelectMapelById(id, schoolUnitID...)
 	if err != nil {
 		return nil, errors.New("MataPelajaranService: gagal mengambil data")
 	}
@@ -84,7 +84,7 @@ func (m *mataPelajaranServiceinterface) SelectMapelById(id string) (*matapelajar
 	return mapel, nil
 }
 
-func (m *mataPelajaranServiceinterface) UpdateMapel(update *matapelajaran.MataPelajaranCore, id string) error {
+func (m *mataPelajaranServiceinterface) UpdateMapel(update *matapelajaran.MataPelajaranCore, id string, schoolUnitID ...string) error {
 	if m == nil || m.mataPelajaranData == nil {
 		return errors.New("Nil repository")
 	}
@@ -93,7 +93,7 @@ func (m *mataPelajaranServiceinterface) UpdateMapel(update *matapelajaran.MataPe
 		return errors.New("Validation error: id is nil")
 	}
 
-	existingData, err := m.mataPelajaranData.SelectMapelById(id)
+	existingData, err := m.mataPelajaranData.SelectMapelById(id, schoolUnitID...)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return errors.New("mata pelajaran service: Data tidak ditemukan")
@@ -117,21 +117,21 @@ func (m *mataPelajaranServiceinterface) UpdateMapel(update *matapelajaran.MataPe
 		update.Status = existingData.Status
 	}
 
-	if err := m.mataPelajaranData.UpdateMapel(update, id); err != nil {
+	if err := m.mataPelajaranData.UpdateMapel(update, id, schoolUnitID...); err != nil {
 		return fmt.Errorf("gagal update data mata pelajaran: %w", err)
 	}
 
 	return nil
 }
 
-func (m *mataPelajaranServiceinterface) DeleteMapel(id string) error {
+func (m *mataPelajaranServiceinterface) DeleteMapel(id string, schoolUnitID ...string) error {
 	if m == nil || m.mataPelajaranData == nil {
 		return errors.New("Nil repository")
 	}
 	if id == "" {
 		return errors.New("Validation error: id is nil")
 	}
-	if err := m.mataPelajaranData.DeleteMapel(id); err != nil {
+	if err := m.mataPelajaranData.DeleteMapel(id, schoolUnitID...); err != nil {
 		return fmt.Errorf("gagal menghapus data mata pelajaran: %w", err)
 	}
 	return nil

@@ -90,6 +90,11 @@ func (mpc *MataPelajaranController) InsertMapel(w http.ResponseWriter, r *http.R
 	// Ubah request ke Core
 	mapelCore = FormatterMapelRequestToCore(mapelReq)
 
+	_, _, unitID, _ := helper.ExtractUserContext(r)
+	if mapelCore.SchoolUnitID == nil && unitID != "" {
+		mapelCore.SchoolUnitID = &unitID
+	}
+
 	// Insert data mata pelajaran ke dalam database menggunakan service mata pelajaran.
 	err := mpc.MataPelajaranService.InsertMapel(&mapelCore)
 	if err != nil {
@@ -123,7 +128,15 @@ func (mpc *MataPelajaranController) Mapel(w http.ResponseWriter, r *http.Request
 		// Jika controller atau service nil maka akan dikembalikan error.
 		return errors.New("Nil controller")
 	}
-	mapel, err := mpc.MataPelajaranService.SelectAllMapel()
+
+	_, _, unitID, _ := helper.ExtractUserContext(r)
+	var mapel []matapelajaran.MataPelajaranCore
+	var err error
+	if unitID != "" {
+		mapel, err = mpc.MataPelajaranService.SelectAllMapel(unitID)
+	} else {
+		mapel, err = mpc.MataPelajaranService.SelectAllMapel()
+	}
 	// Panggil fungsi SelectAllMapel pada service untuk mengambil data mata pelajaran.
 	if err != nil {
 		// Jika terjadi error maka akan dikembalikan dalam bentuk response JSON.
@@ -160,7 +173,14 @@ func (mpc *MataPelajaranController) GetMapelById(w http.ResponseWriter, r *http.
 		// Jika parameter 'id' kosong maka akan dikembalikan error dengan kode status 400 Bad Request.
 		return errors.New("missing 'id' query parameter")
 	}
-	mapelData, err := mpc.MataPelajaranService.SelectMapelById(id)
+	_, _, unitID, _ := helper.ExtractUserContext(r)
+	var mapelData *matapelajaran.MataPelajaranCore
+	var err error
+	if unitID != "" {
+		mapelData, err = mpc.MataPelajaranService.SelectMapelById(id, unitID)
+	} else {
+		mapelData, err = mpc.MataPelajaranService.SelectMapelById(id)
+	}
 	// Panggil fungsi SelectMapelById pada service untuk mengambil data mata pelajaran yang dicari.
 	if err != nil {
 		// Jika terjadi error maka akan dikembalikan dalam bentuk response JSON.
@@ -235,14 +255,25 @@ func (mpc *MataPelajaranController) UpdateMapel(w http.ResponseWriter, r *http.R
 	}
 	mapelUpdate := FormatterMapelRequestToCore(mapelReq)
 	// Ubah data yang diambil menjadi format objek mata pelajaran core.
-	err = mpc.MataPelajaranService.UpdateMapel(&mapelUpdate, id)
+	_, _, unitID, _ := helper.ExtractUserContext(r)
+	if unitID != "" {
+		err = mpc.MataPelajaranService.UpdateMapel(&mapelUpdate, id, unitID)
+	} else {
+		err = mpc.MataPelajaranService.UpdateMapel(&mapelUpdate, id)
+	}
 	// Panggil fungsi UpdateMapel pada service untuk mengupdate data mata pelajaran yang dicari.
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		// Jika terjadi error maka akan dikembalikan dalam bentuk response JSON dengan kode status 400 Bad Request.
 		return err
 	}
-	mapelData, err := mpc.MataPelajaranService.SelectMapelById(id)
+
+	var mapelData *matapelajaran.MataPelajaranCore
+	if unitID != "" {
+		mapelData, err = mpc.MataPelajaranService.SelectMapelById(id, unitID)
+	} else {
+		mapelData, err = mpc.MataPelajaranService.SelectMapelById(id)
+	}
 	// Panggil fungsi SelectMapelById pada service untuk mengambil data mata pelajaran yang diupdate.
 	if err != nil {
 		http.Error(w, "Gagal mengambil data setelah update", http.StatusInternalServerError)
@@ -274,7 +305,13 @@ func (mpc *MataPelajaranController) DeleteMapel(w http.ResponseWriter, r *http.R
 		// Jika parameter 'id' kosong maka akan dikembalikan error dengan kode status 400 Bad Request.
 		return errors.New("missing 'id' query parameter")
 	}
-	err := mpc.MataPelajaranService.DeleteMapel(id)
+	_, _, unitID, _ := helper.ExtractUserContext(r)
+	var err error
+	if unitID != "" {
+		err = mpc.MataPelajaranService.DeleteMapel(id, unitID)
+	} else {
+		err = mpc.MataPelajaranService.DeleteMapel(id)
+	}
 	// Panggil fungsi DeleteMapel pada service untuk menghapus data mata pelajaran yang dicari.
 	if err != nil {
 		return err
