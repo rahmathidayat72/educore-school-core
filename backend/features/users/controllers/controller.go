@@ -122,6 +122,17 @@ func (uc *UserController) InsertUser(w http.ResponseWriter, r *http.Request) err
 		return fmt.Errorf("validasi gagal: field kosong")
 	}
 
+	// Aturan Otorisasi Hierarki Hak Akses:
+	// Hanya Super Admin yang berwenang membuat akun dengan role super_admin atau admin
+	_, callerRole, _, isCallerSuperAdmin := helper.ExtractUserContext(r)
+	if callerRole != "" && !isCallerSuperAdmin {
+		targetRole := strings.ToLower(strings.TrimSpace(userReq.Role))
+		if targetRole == "super_admin" || targetRole == "admin" {
+			helper.JSONResponse(w, http.StatusForbidden, "Hanya Super Admin yang berwenang membuat akun dengan role Super Admin atau Admin")
+			return errors.New("forbidden: only super_admin can create admin or super_admin accounts")
+		}
+	}
+
 	// Format ke core.
 	// Ubah objek userReq ke dalam objek userCore.
 	usersCore = FormatUserRequestToCore(userReq)
@@ -209,6 +220,28 @@ func (uc *UserController) UpdateUser(w http.ResponseWriter, r *http.Request) err
 	// Format data userReq menjadi objek user core.
 	updateUser := FormatUserRequestToCore(userReq)
 
+	// Aturan Otorisasi Hierarki Hak Akses pada Update:
+	_, callerRole, _, isCallerSuperAdmin := helper.ExtractUserContext(r)
+	if callerRole != "" && !isCallerSuperAdmin {
+		existingUser, errGet := uc.userService.SelectUserById(idStr)
+		if errGet == nil && existingUser != nil {
+			// Admin biasa tidak boleh mengubah akun Super Admin
+			if strings.ToLower(strings.TrimSpace(existingUser.Role)) == "super_admin" {
+				helper.JSONResponse(w, http.StatusForbidden, "Hanya Super Admin yang berwenang mengubah akun Super Admin")
+				return errors.New("forbidden: cannot update super_admin account")
+			}
+
+			// Admin biasa tidak boleh mengubah role akun menjadi admin atau super_admin
+			targetRole := strings.ToLower(strings.TrimSpace(userReq.Role))
+			if targetRole != "" && targetRole != strings.ToLower(strings.TrimSpace(existingUser.Role)) {
+				if targetRole == "super_admin" || targetRole == "admin" {
+					helper.JSONResponse(w, http.StatusForbidden, "Hanya Super Admin yang berwenang menetapkan role Super Admin atau Admin")
+					return errors.New("forbidden: only super_admin can grant admin or super_admin roles")
+				}
+			}
+		}
+	}
+
 	// Panggil service untuk memperbarui data user berdasarkan ID.
 	err = uc.userService.UpdateUser(&updateUser, idStr)
 	if err != nil {
@@ -258,6 +291,19 @@ func (uc *UserController) DeleteUser(w http.ResponseWriter, r *http.Request) err
 		http.Error(w, "parameter 'id' wajib diisi", http.StatusBadRequest)
 		return errors.New("missing 'id' query parameter")
 	}
+
+	// Aturan Otorisasi Hierarki Hak Akses pada Delete:
+	_, callerRole, _, isCallerSuperAdmin := helper.ExtractUserContext(r)
+	if callerRole != "" && !isCallerSuperAdmin {
+		existingUser, errGet := uc.userService.SelectUserById(id)
+		if errGet == nil && existingUser != nil {
+			if strings.ToLower(strings.TrimSpace(existingUser.Role)) == "super_admin" {
+				helper.JSONResponse(w, http.StatusForbidden, "Hanya Super Admin yang berwenang menghapus akun Super Admin")
+				return errors.New("forbidden: cannot delete super_admin account")
+			}
+		}
+	}
+
 	// Panggil service untuk menghapus data user berdasarkan ID.
 	// Jika terjadi error saat menghapus data user maka kembalikan error.
 	err := uc.userService.DeleteUserById(id)

@@ -46,8 +46,11 @@
         <div class="col-md-4">
           <select v-model="roleFilter" class="form-select">
             <option value="">Semua Peran (Role)</option>
+            <option value="super_admin">Super Administrator (Super Admin)</option>
             <option value="admin">Administrator (Admin)</option>
             <option value="guru">Tenaga Pengajar (Guru)</option>
+            <option value="wali">Wali Murid (Wali)</option>
+            <option value="siswa">Peserta Didik (Siswa)</option>
             <option value="user">Pengguna Standar (User)</option>
           </select>
         </div>
@@ -93,12 +96,12 @@
                   <div
                     class="avatar-user rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
                     :class="{
-                      'role-admin': user.role === 'admin',
+                      'role-admin': user.role === 'admin' || user.role === 'super_admin',
                       'role-guru': user.role === 'guru',
-                      'role-user': user.role === 'user',
+                      'role-user': user.role === 'user' || user.role === 'wali' || user.role === 'siswa',
                     }"
                   >
-                    <i :class="user.role === 'admin' ? 'fas fa-user-shield' : (user.role === 'guru' ? 'fas fa-chalkboard-teacher' : 'fas fa-user')" class="small"></i>
+                    <i :class="user.role === 'super_admin' ? 'fas fa-crown text-warning' : (user.role === 'admin' ? 'fas fa-user-shield text-danger' : (user.role === 'guru' ? 'fas fa-chalkboard-teacher' : 'fas fa-user'))" class="small"></i>
                   </div>
                   <span class="fw-bold text-dark">{{ user.username }}</span>
                 </div>
@@ -108,17 +111,23 @@
                 <span
                   class="badge px-2 py-1"
                   :class="{
+                    'bg-dark text-white border border-secondary': user.role === 'super_admin',
                     'bg-danger-subtle text-danger': user.role === 'admin',
                     'bg-primary-subtle text-primary': user.role === 'guru',
+                    'bg-info-subtle text-info': user.role === 'wali',
+                    'bg-success-subtle text-success': user.role === 'siswa',
                     'bg-secondary-subtle text-secondary': user.role === 'user',
                   }"
                 >
-                  <i :class="user.role === 'admin' ? 'fas fa-shield-alt me-1' : (user.role === 'guru' ? 'fas fa-graduation-cap me-1' : 'fas fa-user me-1')"></i>
-                  {{ user.role === 'admin' ? 'Admin' : (user.role === 'guru' ? 'Guru' : 'User') }}
+                  <i :class="user.role === 'super_admin' ? 'fas fa-crown me-1 text-warning' : (user.role === 'admin' ? 'fas fa-shield-alt me-1' : (user.role === 'guru' ? 'fas fa-graduation-cap me-1' : (user.role === 'wali' ? 'fas fa-user-friends me-1' : (user.role === 'siswa' ? 'fas fa-user-graduate me-1' : 'fas fa-user me-1'))))"></i>
+                  {{ user.role === 'super_admin' ? 'Super Admin' : (user.role === 'admin' ? 'Admin' : (user.role === 'guru' ? 'Guru' : (user.role === 'wali' ? 'Wali' : (user.role === 'siswa' ? 'Siswa' : 'User')))) }}
                 </span>
               </td>
               <td class="text-end">
-                <div class="btn-group btn-group-sm">
+                <div v-if="user.role === 'super_admin' && !authStore.isSuperAdmin" class="text-muted small fst-italic">
+                  <i class="fas fa-lock me-1"></i>Terkunci
+                </div>
+                <div v-else class="btn-group btn-group-sm">
                   <button @click="openEditModal(user)" class="btn btn-outline-primary" title="Ubah Akun Pengguna">
                     <i class="fas fa-edit"></i>
                   </button>
@@ -185,10 +194,16 @@
                     <div class="input-group">
                       <span class="input-group-text bg-light text-muted"><i class="fas fa-user-tag"></i></span>
                       <select v-model="form.role" class="form-select" required>
-                        <option value="admin">Administrator (Admin)</option>
+                        <option v-if="authStore.isSuperAdmin" value="super_admin">Super Administrator (Super Admin)</option>
+                        <option v-if="authStore.isSuperAdmin" value="admin">Administrator (Admin)</option>
                         <option value="guru">Tenaga Pengajar (Guru)</option>
+                        <option value="wali">Wali Murid (Wali)</option>
+                        <option value="siswa">Peserta Didik (Siswa)</option>
                         <option value="user">Pengguna Standar (User)</option>
                       </select>
+                    </div>
+                    <div v-if="!authStore.isSuperAdmin" class="form-text text-muted" style="font-size: 0.72rem;">
+                      <i class="fas fa-info-circle me-1 text-info"></i>Pembuatan akun Administrator dan Super Admin hanya dapat dilakukan oleh Super Admin Yayasan.
                     </div>
                   </div>
                 </div>
