@@ -9,12 +9,18 @@
             {{ filteredKelas.length }} Kelas
           </span>
         </div>
-        <p class="text-secondary small mb-0">Kelola daftar rombongan belajar, wali kelas, ruang belajar, dan kapasitas siswa.</p>
+        <p class="text-secondary small mb-0">Kelola daftar rombongan belajar, wali kelas, ruang belajar, dan kapasitas penempatan siswa.</p>
       </div>
-      <button @click="openCreateModal" class="btn btn-info btn-shine text-white d-flex align-items-center gap-2 shadow-sm">
-        <i class="fas fa-plus"></i>
-        <span>Tambah Kelas Baru</span>
-      </button>
+      <div class="d-flex align-items-center gap-2">
+        <button @click="exportDataKelas" class="btn btn-outline-info d-flex align-items-center gap-2 shadow-sm" :disabled="loading || filteredKelas.length === 0" title="Unduh rekapitulasi kapasitas rombel ke Excel/CSV">
+          <i class="fas fa-file-excel"></i>
+          <span>Ekspor Rekap</span>
+        </button>
+        <button @click="openCreateModal" class="btn btn-info btn-shine text-white d-flex align-items-center gap-2 shadow-sm">
+          <i class="fas fa-plus"></i>
+          <span>Tambah Kelas Baru</span>
+        </button>
+      </div>
     </div>
 
     <!-- Alert Notifikasi -->
@@ -505,6 +511,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { kelasApi } from '@/api/kelasApi'
 import { guruApi } from '@/api/guruApi'
+import { exportToCSV } from '@/utils/exportHelper'
 
 const classes = ref([])
 const availableGurus = ref([])
@@ -599,6 +606,26 @@ const filteredKelas = computed(() => {
     return matchesSearch && matchesStatus && matchesTingkat
   })
 })
+
+const exportDataKelas = () => {
+  const headers = [
+    { label: 'No', key: '__index' },
+    { label: 'Nama Rombongan Belajar', key: 'kelas' },
+    { label: 'Kode Kelas', key: 'kode_kelas' },
+    { label: 'Tingkat', key: 'tingkat', formatter: (k) => k.tingkat ? `Kelas ${k.tingkat}` : '-' },
+    { label: 'Fase', key: 'fase' },
+    { label: 'Jurusan / Peminatan', key: 'jurusan' },
+    { label: 'Wali Kelas', key: 'nama_guru', formatter: (k) => k.nama_guru || '-' },
+    { label: 'Ruang Belajar', key: 'ruangan' },
+    { label: 'Tahun Ajaran', key: 'tahun_ajaran' },
+    { label: 'Siswa Terdaftar', key: 'total_siswa', formatter: (k) => k.total_siswa || 0 },
+    { label: 'Kapasitas Maksimal', key: 'kapasitas', formatter: (k) => k.kapasitas || 36 },
+    { label: 'Persentase Keterisian (%)', key: 'persentase', formatter: (k) => `${Math.round(((k.total_siswa || 0) / (k.kapasitas || 36)) * 100)}%` },
+    { label: 'Sisa Kuota Kursi', key: 'sisa', formatter: (k) => Math.max(0, (k.kapasitas || 36) - (k.total_siswa || 0)) },
+    { label: 'Status Rombel', key: 'status', formatter: (k) => k.status || 'Aktif' }
+  ]
+  exportToCSV('Rekapitulasi_Kapasitas_Rombel', headers, filteredKelas.value)
+}
 
 const openCreateModal = () => {
   isEditing.value = false

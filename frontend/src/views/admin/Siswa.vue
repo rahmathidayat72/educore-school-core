@@ -11,10 +11,16 @@
         </div>
         <p class="text-secondary small mb-0">Kelola biodata komprehensif siswa, penempatan rombongan belajar (kelas), serta data wali murid.</p>
       </div>
-      <button @click="openCreateModal" class="btn btn-success btn-shine d-flex align-items-center gap-2 shadow-sm">
-        <i class="fas fa-user-plus"></i>
-        <span>Tambah Siswa</span>
-      </button>
+      <div class="d-flex align-items-center gap-2">
+        <button @click="exportDataSiswa" class="btn btn-outline-success d-flex align-items-center gap-2 shadow-sm" :disabled="loading || filteredSiswa.length === 0" title="Unduh data siswa ke file Excel/CSV">
+          <i class="fas fa-file-excel"></i>
+          <span>Ekspor Excel</span>
+        </button>
+        <button @click="openCreateModal" class="btn btn-success btn-shine d-flex align-items-center gap-2 shadow-sm">
+          <i class="fas fa-user-plus"></i>
+          <span>Tambah Siswa</span>
+        </button>
+      </div>
     </div>
 
     <!-- Alert Notifikasi -->
@@ -631,6 +637,7 @@ import { useAuthStore } from '@/stores/auth'
 import { siswaApi } from '@/api/siswaApi'
 import { kelasApi } from '@/api/kelasApi'
 import { guardiansApi } from '@/api/guardiansApi'
+import { exportToCSV } from '@/utils/exportHelper'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -785,6 +792,26 @@ const filteredSiswa = computed(() => {
     return matchesSearch && matchesKelas && matchesStatus
   })
 })
+
+const exportDataSiswa = () => {
+  const headers = [
+    { label: 'No', key: '__index' },
+    { label: 'Nama Lengkap Siswa', key: 'nama' },
+    { label: 'NIS', key: 'nis' },
+    { label: 'NISN', key: 'nisn' },
+    { label: 'Rombel Kelas', key: 'nama_kelas', formatter: (s) => s.nama_kelas || s.kelas_id || '-' },
+    { label: 'Jenis Kelamin', key: 'jenis_kelamin' },
+    { label: 'Tempat Lahir', key: 'tempat_lahir' },
+    { label: 'Tanggal Lahir', key: 'tanggal_lahir', formatter: (s) => s.tanggal_lahir ? s.tanggal_lahir.substring(0, 10) : '-' },
+    { label: 'Agama', key: 'agama' },
+    { label: 'Status', key: 'status', formatter: (s) => s.status || 'Aktif' },
+    { label: 'Nama Wali Murid', key: 'nama_wali' },
+    { label: 'Telepon Wali', key: 'no_telepon_wali' },
+    { label: 'Email Siswa', key: 'email' },
+    { label: 'Alamat', key: 'alamat' }
+  ]
+  exportToCSV('Data_Siswa_Sekolah', headers, filteredSiswa.value)
+}
 
 const openCreateModal = () => {
   isEditing.value = false

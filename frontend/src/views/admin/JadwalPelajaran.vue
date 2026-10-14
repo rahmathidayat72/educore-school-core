@@ -34,6 +34,11 @@
           </button>
         </div>
 
+        <button @click="printJadwalModal" class="btn btn-outline-secondary d-flex align-items-center gap-2 shadow-sm" title="Cetak atau simpan jadwal ke PDF">
+          <i class="fas fa-print"></i>
+          <span class="d-none d-sm-inline">Cetak PDF</span>
+        </button>
+
         <button @click="openCreateModal" class="btn btn-primary text-white fw-semibold d-flex align-items-center gap-2 shadow-sm">
           <i class="fas fa-plus"></i>
           <span>Tambah Jadwal Baru</span>
@@ -640,6 +645,151 @@
         </div>
       </Transition>
     </Teleport>
+
+    <!-- Modal Cetak Dokumen Jadwal (Task-09.2 & Task-09.3) -->
+    <Teleport to="body">
+      <Transition name="modal-fade">
+        <div v-if="showPrintModal" class="app-modal-overlay" tabindex="-1" @click.self="closePrintModal">
+          <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg bg-white d-flex flex-column" style="max-height: 95vh;">
+              <div class="modal-header bg-dark text-white flex-shrink-0 d-print-none">
+                <h5 class="modal-title fw-bold d-flex align-items-center gap-2">
+                  <i class="fas fa-print"></i>
+                  <span>Pratinjau & Cetak Dokumen Jadwal KBM</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" @click="closePrintModal"></button>
+              </div>
+
+              <!-- Filter Cetak -->
+              <div class="p-3 bg-light border-bottom d-print-none">
+                <div class="row g-2 align-items-center">
+                  <div class="col-md-4">
+                    <label class="form-label small fw-semibold text-secondary mb-1">Format Lembar Dokumen</label>
+                    <select v-model="printType" class="form-select form-select-sm">
+                      <option value="kelas">Matriks Mingguan Rombel Kelas</option>
+                      <option value="guru">Lembar Jadwal Mengajar Guru</option>
+                      <option value="semua">Rekap Seluruh Jadwal Sekolah</option>
+                    </select>
+                  </div>
+
+                  <div v-if="printType === 'kelas'" class="col-md-4">
+                    <label class="form-label small fw-semibold text-secondary mb-1">Pilih Rombongan Belajar</label>
+                    <select v-model="printTargetKelas" class="form-select form-select-sm">
+                      <option value="">-- Semua Kelas --</option>
+                      <option v-for="k in listKelas" :key="k.id" :value="k.id">{{ k.kelas }}</option>
+                    </select>
+                  </div>
+
+                  <div v-if="printType === 'guru'" class="col-md-4">
+                    <label class="form-label small fw-semibold text-secondary mb-1">Pilih Guru Pendidik</label>
+                    <select v-model="printTargetGuru" class="form-select form-select-sm">
+                      <option value="">-- Semua Guru --</option>
+                      <option v-for="g in listGuru" :key="g.id" :value="g.id">{{ g.nama }}</option>
+                    </select>
+                  </div>
+
+                  <div class="col-md-4 text-md-end ms-auto mt-3 mt-md-auto">
+                    <button @click="triggerBrowserPrint" class="btn btn-primary btn-sm px-3 shadow-sm d-inline-flex align-items-center gap-1">
+                      <i class="fas fa-print"></i>
+                      <span>Cetak Sekarang (Print / PDF)</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Area Kertas Cetak (Printable Sheet) -->
+              <div class="modal-body p-4 overflow-y-auto printable-sheet" id="printableArea">
+                <!-- Kop Dokumen Resmi -->
+                <div class="text-center pb-3 mb-3 border-bottom border-2 border-dark kop-surat">
+                  <h4 class="fw-bold mb-0 text-uppercase tracking-wider">SEKOLAH CORE MANAGEMENT &bull; EDUCORE</h4>
+                  <div class="small text-muted">Sistem Terintegrasi Kurikulum, Jadwal Bebas Bentrok & Multi-Unit Pendidikan</div>
+                  <h5 class="fw-bold text-dark mt-2 mb-0">
+                    {{ printType === 'kelas' ? 'JADWAL PEMBELAJARAN KELAS MINGGUAN' : (printType === 'guru' ? 'LEMBAR JADWAL TUGAS MENGAJAR GURU' : 'REKAPITULASI JADWAL PELAJARAN SEKOLAH') }}
+                  </h5>
+                  <div class="small text-secondary mt-1">
+                    Tahun Ajaran 2026/2027 &bull; Semester Ganjil &bull; Status: Resmi
+                  </div>
+                </div>
+
+                <!-- Info Header Cetak -->
+                <div class="row g-2 mb-3 small" v-if="printType === 'kelas' && printTargetKelas">
+                  <div class="col-6">
+                    <strong>Rombongan Belajar:</strong> {{ getKelasName(printTargetKelas) }}
+                  </div>
+                  <div class="col-6 text-end">
+                    <strong>Wali Kelas:</strong> {{ getWaliName(printTargetKelas) }}
+                  </div>
+                </div>
+
+                <div class="row g-2 mb-3 small" v-else-if="printType === 'guru' && printTargetGuru">
+                  <div class="col-6">
+                    <strong>Nama Pendidik:</strong> {{ getGuruName(printTargetGuru) }}
+                  </div>
+                  <div class="col-6 text-end">
+                    <strong>Total Jam Mengajar:</strong> {{ printableJadwals.length }} Sesi Pertemuan
+                  </div>
+                </div>
+
+                <!-- Tabel Data Cetak -->
+                <table class="table table-bordered table-sm align-middle print-table" style="font-size: 0.8rem;">
+                  <thead class="table-light text-center border-dark">
+                    <tr>
+                      <th style="width: 40px;">No</th>
+                      <th style="width: 90px;">Hari</th>
+                      <th style="width: 110px;">Waktu</th>
+                      <th>Mata Pelajaran</th>
+                      <th v-if="printType !== 'kelas'">Kelas</th>
+                      <th v-if="printType !== 'guru'">Guru Pengampu</th>
+                      <th style="width: 100px;">Ruang</th>
+                      <th style="width: 110px;">Kegiatan</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-if="printableJadwals.length === 0">
+                      <td :colspan="printType === 'semua' ? 8 : 7" class="text-center py-4 text-muted fst-italic">
+                        Tidak ada sesi jadwal pelajaran yang sesuai dengan pilihan cetak.
+                      </td>
+                    </tr>
+                    <tr v-for="(item, idx) in printableJadwals" :key="item.id">
+                      <td class="text-center">{{ idx + 1 }}</td>
+                      <td class="text-center fw-semibold">{{ item.nama_hari }}</td>
+                      <td class="text-center font-monospace">{{ item.jam_mulai }} - {{ item.jam_selesai }}</td>
+                      <td class="fw-bold">{{ item.nama_pelajaran }}</td>
+                      <td v-if="printType !== 'kelas'" class="text-center">{{ item.nama_kelas }}</td>
+                      <td v-if="printType !== 'guru'">{{ item.nama_guru || '-' }}</td>
+                      <td class="text-center">{{ item.ruang || 'Umum' }}</td>
+                      <td class="text-center">{{ item.jenis_kegiatan || 'Tatap Muka' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <!-- Kolom Tanda Tangan Resmi Dokumen -->
+                <div class="row mt-5 pt-3 text-center small text-dark d-flex justify-content-between sign-section">
+                  <div class="col-4">
+                    <div>Mengetahui,</div>
+                    <div class="fw-bold mb-5">Kepala Sekolah</div>
+                    <div class="border-bottom border-dark d-inline-block px-4 pb-1">Dr. H. Ahmad Dahlan, M.Pd</div>
+                    <div class="text-muted" style="font-size: 0.7rem;">NIP. 19780101 200501 1 002</div>
+                  </div>
+                  <div class="col-4 ms-auto">
+                    <div>Ditetapkan di Jakarta, {{ new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) }}</div>
+                    <div class="fw-bold mb-5">Waka. Bidang Kurikulum</div>
+                    <div class="border-bottom border-dark d-inline-block px-4 pb-1">Siti Fatimah, S.Pd., M.Si</div>
+                    <div class="text-muted" style="font-size: 0.7rem;">NIP. 19850512 201001 2 015</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="modal-footer border-top pt-2 d-print-none">
+                <button type="button" class="btn btn-secondary btn-sm" @click="closePrintModal">
+                  Tutup
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -690,6 +840,66 @@ const selectedJadwal = ref(null)
 
 const showDeleteModal = ref(false)
 const jadwalToDelete = ref(null)
+
+// Print State (Task-09.2 & Task-09.3)
+const showPrintModal = ref(false)
+const printType = ref('kelas') // 'kelas' | 'guru' | 'semua'
+const printTargetKelas = ref('')
+const printTargetGuru = ref('')
+
+const openPrintModal = () => {
+  if (filterKelas.value) {
+    printType.value = 'kelas'
+    printTargetKelas.value = filterKelas.value
+  } else {
+    printType.value = 'semua'
+  }
+  showPrintModal.value = true
+}
+
+const printJadwalModal = () => {
+  openPrintModal()
+}
+
+const closePrintModal = () => {
+  showPrintModal.value = false
+}
+
+const getKelasName = (kId) => {
+  const k = listKelas.value.find(item => item.id === kId)
+  return k ? k.kelas : '-'
+}
+
+const getWaliName = (kId) => {
+  const k = listKelas.value.find(item => item.id === kId)
+  return k ? (k.nama_wali_kelas || k.wali_kelas || 'Belum Ditentukan') : '-'
+}
+
+const getGuruName = (gId) => {
+  const g = listGuru.value.find(item => item.id === gId)
+  return g ? g.nama : '-'
+}
+
+const printableJadwals = computed(() => {
+  return jadwals.value.filter(j => {
+    if (printType.value === 'kelas' && printTargetKelas.value) {
+      if (String(j.kelas_id) !== String(printTargetKelas.value)) return false
+    }
+    if (printType.value === 'guru' && printTargetGuru.value) {
+      if (String(j.id_guru) !== String(printTargetGuru.value)) return false
+    }
+    return true
+  }).sort((a, b) => {
+    if (parseInt(a.hari) !== parseInt(b.hari)) {
+      return parseInt(a.hari) - parseInt(b.hari)
+    }
+    return (a.jam_mulai || '').localeCompare(b.jam_mulai || '')
+  })
+})
+
+const triggerBrowserPrint = () => {
+  window.print()
+}
 
 const form = ref({
   kode_jadwal: '',
@@ -988,5 +1198,37 @@ onMounted(() => {
   border-radius: 12px;
   overflow: hidden;
   max-height: 90vh;
+}
+
+@media print {
+  /* Sembunyikan elemen background saat cetak */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Tampilkan hanya area lembar cetak */
+  #printableArea, #printableArea * {
+    visibility: visible;
+  }
+
+  #printableArea {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 10mm;
+    background: #fff;
+    color: #000;
+  }
+
+  .d-print-none {
+    display: none !important;
+  }
+
+  .print-table th, .print-table td {
+    border: 1px solid #000 !important;
+    color: #000 !important;
+  }
 }
 </style>

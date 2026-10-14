@@ -11,10 +11,16 @@
         </div>
         <p class="text-secondary small mb-0">Kelola informasi biodata lengkap guru, status kepegawaian, dan akun akses pendidik.</p>
       </div>
-      <button @click="openCreateModal" class="btn btn-primary btn-shine d-flex align-items-center gap-2 shadow-sm">
-        <i class="fas fa-plus"></i>
-        <span>Tambah Guru</span>
-      </button>
+      <div class="d-flex align-items-center gap-2">
+        <button @click="exportDataGuru" class="btn btn-outline-primary d-flex align-items-center gap-2 shadow-sm" :disabled="loading || filteredGuru.length === 0" title="Unduh data guru ke file Excel/CSV">
+          <i class="fas fa-file-excel"></i>
+          <span>Ekspor Excel</span>
+        </button>
+        <button @click="openCreateModal" class="btn btn-primary btn-shine d-flex align-items-center gap-2 shadow-sm">
+          <i class="fas fa-plus"></i>
+          <span>Tambah Guru</span>
+        </button>
+      </div>
     </div>
 
     <!-- Alert Notifikasi -->
@@ -446,6 +452,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { guruApi } from '@/api/guruApi'
 import { userApi } from '@/api/userApi'
+import { exportToCSV } from '@/utils/exportHelper'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -573,6 +580,25 @@ const filteredGuru = computed(() => {
     return matchQuery && matchStatus
   })
 })
+
+const exportDataGuru = () => {
+  const headers = [
+    { label: 'No', key: '__index' },
+    { label: 'Nama Lengkap Pendidik', key: 'nama' },
+    { label: 'NIP', key: 'nip' },
+    { label: 'NUPTK', key: 'nuptk' },
+    { label: 'Status Kepegawaian', key: 'status_kepegawaian' },
+    { label: 'Pendidikan Terakhir', key: 'pendidikan_terakhir' },
+    { label: 'Jenis Kelamin', key: 'jenis_kelamin' },
+    { label: 'Tempat Lahir', key: 'tempat_lahir' },
+    { label: 'Tanggal Lahir', key: 'tanggal_lahir', formatter: (g) => g.tanggal_lahir ? g.tanggal_lahir.substring(0, 10) : '-' },
+    { label: 'Agama', key: 'agama' },
+    { label: 'No Telepon/WA', key: 'no_telepon' },
+    { label: 'Email Resmi', key: 'email' },
+    { label: 'Alamat', key: 'alamat' }
+  ]
+  exportToCSV('Data_Guru_Pendidik', headers, filteredGuru.value)
+}
 
 const openCreateModal = () => {
   isEditing.value = false

@@ -49,3 +49,9 @@
 - [x] `task-08.2`: Pembuatan tampilan Manajemen Periode Tahun Ajaran (`TahunAjaran.vue`). (Status: `✅ Selesai dan terverifikasi`)
 - [x] `task-08.3`: Pembuatan tampilan Direktori Master & Penautan Wali Murid (`WaliMurid.vue`). (Status: `✅ Selesai dan terverifikasi`)
 - [x] `task-08.4`: Integrasi Navigasi Sidebar, Route Guards, & Verifikasi Build. (Status: `✅ Selesai dan terverifikasi`)
+
+### Phase 09: Academic Reporting, Export & Print System
+- [x] `task-09.1`: Utilitas export data akademik (Siswa & Guru) ke Excel/CSV (`exportHelper.js`). (Status: `✅ Selesai dan terverifikasi`)
+- [x] `task-09.2`: Modul cetak & layout print jadwal pelajaran matriks mingguan per kelas. (Status: `✅ Selesai dan terverifikasi`)
+- [x] `task-09.3`: Lembar cetak jadwal mengajar personal masing-masing guru pendidik. (Status: `✅ Selesai dan terverifikasi`)
+- [x] `task-09.4`: Rekapitulasi kapasitas rombel & penempatan siswa (Enrollment Summary). (Status: `✅ Selesai dan terverifikasi`)

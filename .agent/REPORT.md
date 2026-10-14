@@ -320,3 +320,22 @@
 - **Bukti / Verifikasi:**
   - `npm run build` di `frontend/` berstatus `PASS` (Vite production build sukses dalam 1.05s).
   - `go test ./...` dan `go build ./...` di `backend/` berstatus `PASS` (Zero regression).
+
+### [2026-10-14] Phase 09 — Academic Reporting, Export & Print System (Task 09.1 - 09.4)
+- **Status:** `✅ Selesai dan terverifikasi`
+- **Requirement:** OBJ-001, BUS-001, FR-001, FR-003, NFR-UX-001, NFR-PERF-001
+- **Tindakan:**
+  1. `task-09.1`: Pembuatan modul utilitas ekspor data `frontend/src/utils/exportHelper.js` berbasis format CSV kompatibel Excel dengan encoding UTF-8 Byte Order Mark (`\uFEFF`) dan escaping cell standar RFC 4180.
+  2. Integrasi aksi ekspor data pada antarmuka master:
+     - `frontend/src/views/admin/Siswa.vue`: Tombol "Ekspor Excel" untuk mengunduh biodata siswa, NIS/NISN, rombel kelas, status, data wali, kontak, dan alamat.
+     - `frontend/src/views/admin/Guru.vue`: Tombol "Ekspor Excel" untuk mengunduh daftar pendidik, NIP/NUPTK, status kepegawaian, kontak, dan kualifikasi pendidikan.
+  3. `task-09.2` & `task-09.3`: Integrasi modul pratinjau dan cetak jadwal di `frontend/src/views/admin/JadwalPelajaran.vue`:
+     - Modal interaktif pemilihan format cetak: Matriks mingguan rombel kelas, lembar jadwal tugas mengajar guru personal, atau rekapitulasi jadwal sekolah.
+     - Tata letak resmi berkas cetak (*printable sheet*) lengkap dengan kop surat institusi EduCore, tabel sesi KBM, dan kolom tanda tangan Kepala Sekolah serta Waka Kurikulum.
+     - Aturan `@media print` CSS terisolasi (`#printableArea`) untuk memastikan output cetak printer/PDF bersih tanpa elemen antarmuka web.
+  4. `task-09.4`: Integrasi rekapitulasi kapasitas rombel & penempatan siswa di `frontend/src/views/admin/Kelas.vue`:
+     - Tombol "Ekspor Rekap" untuk mengunduh rasio keterisian rombel, kapasitas maksimum, siswa terdaftar, sisa kuota kursi, dan wali kelas pendamping.
+- **Bukti / Verifikasi:**
+  - `npm run build` di `frontend/` berstatus `PASS` (Vite production build sukses dalam 1.05s tanpa error kompilasi).
+  - `go test ./...` di `backend/` berstatus `PASS` (Zero regression di seluruh unit test backend Go).
+  - `go build ./...` di `backend/` berstatus `PASS` (Kompilasi backend bersih).
